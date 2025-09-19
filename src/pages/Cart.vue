@@ -7,19 +7,29 @@
     <div v-else class="cart-items">
       <div v-for="item in cartStore.cart" :key="item.id" class="cart-item">
         <div class="item-info">
-          <img :src="item.image" alt="Product Image" class="item-image" />
-          <h3 class="item-name">{{ item.name }}</h3>
-          <p class="item-price">₹{{ item.price }} x {{ item.quantity }}</p>
+          <div>
+            <img :src="item.image" alt="Product Image" class="item-image" />
+          </div>
+          <div class="item-details">
+            <h3 class="item-name">{{ item.name }}</h3>
+            <p style="padding-bottom: 15px">{{ item.description }}</p>
+            <p class="item-price">₹{{ item.price }} x {{ item.quantity }}</p>
+          </div>
         </div>
 
         <div class="item-actions">
-          <input
-            type="number"
-            v-model.number="item.quantity"
-            min="1"
-            class="quantity-input"
-            @change="updateQuantity(item.id, item.quantity)"
-          />
+          <div>
+            <p class="quantity-operator" @click="item.quantity > 1 && item.quantity--">-</p>
+            <input
+              type="number"
+              v-model.number="item.quantity"
+              min="1"
+              class="quantity-input"
+              @change="updateQuantity(item.id, item.quantity)"
+            />
+            <p class="quantity-operator" @click="item.quantity++">+</p>
+          </div>
+
           <button @click="removeItem(item.id)" class="remove-btn">Remove</button>
         </div>
       </div>
@@ -86,7 +96,27 @@ function updateQuantity(id, qty) {
 
 .item-info {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  padding-right: 20px;
+}
+
+.item-details {
+  margin-left: 1rem;
+}
+
+.quantity-operator {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  line-height: 24px;
+  text-align: center;
+  background-color: #e5e7eb; /* gray-300 */
+  color: #374151; /* gray-700 */
+  border-radius: 0.375rem;
+  cursor: pointer;
+  user-select: none;
+  font-weight: bold;
+  margin: 0 0.25rem;
 }
 
 .item-name {
@@ -99,8 +129,10 @@ function updateQuantity(id, qty) {
 }
 
 .item-image {
-  width: 50px;
-  height: 50px;
+  width: 150px;
+  height: 150px;
+  padding-left: 20px;
+  padding-right: 10%;
   object-fit: cover;
   border-radius: 0.375rem;
 }
@@ -155,5 +187,77 @@ function updateQuantity(id, qty) {
 
 .checkout-btn:hover {
   background-color: #2563eb; /* blue-600 */
+}
+/* Mobile responsive styles */
+@media (max-width: 640px) {
+  .cart-container {
+    padding: 0.5rem;
+    height: auto;
+  }
+
+  .cart-title {
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  .cart-items {
+    gap: 0.75rem;
+  }
+
+  .cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.75rem;
+  }
+
+  .item-info {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .item-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .item-name {
+    font-size: 1rem;
+  }
+
+  .item-price {
+    font-size: 0.85rem;
+  }
+
+  .item-actions {
+    margin-top: 0.5rem;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .quantity-input {
+    width: 3rem;
+    height: 1.8rem;
+    font-size: 0.9rem;
+  }
+
+  .remove-btn {
+    flex: 1;
+    text-align: center;
+    max-width: 120px;
+  }
+
+  .cart-total {
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .checkout-btn {
+    width: 100%;
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
 }
 </style>

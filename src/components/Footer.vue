@@ -46,9 +46,10 @@ defineOptions({
 
 <style scoped>
 .footer {
-  background: linear-gradient(135deg, #3b82f6, #ec4899, #facc15);
+  background: #2563eb;
+  text-align: center;
   color: white;
-  padding-top: 2rem;
+  padding-top: 1.75rem;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -77,6 +78,10 @@ defineOptions({
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
   color: #fef9c3;
+}
+.footer-links,
+.footer-socials {
+  text-align: left;
 }
 
 .footer-links ul {
@@ -114,5 +119,52 @@ defineOptions({
   margin-top: 2rem;
   border-top: 2px solid rgba(255, 255, 255, 0.3);
   font-size: 0.85rem;
+}
+/* 📱 Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .footer-container {
+    grid-template-columns: 1fr; /* stack all sections */
+    text-align: center;
+    gap: 1.5rem;
+  }
+
+  .footer-links,
+  .footer-socials {
+    text-align: center;
+  }
+
+  .footer-links ul {
+    padding: 0;
+    margin: 0 auto;
+  }
+
+  .footer-links li {
+    margin: 0.3rem 0;
+  }
+
+  .footer-socials .social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-title {
+    font-size: 1.25rem;
+  }
+
+  .footer-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .footer-links h3,
+  .footer-socials h3 {
+    font-size: 1rem;
+  }
+
+  .footer-bottom {
+    font-size: 0.75rem;
+  }
 }
 </style>

@@ -1,16 +1,23 @@
 <template>
   <div class="product-container">
     <div class="product-card">
-      <img :src="product.image" alt="Product Image" class="product-image" />
-      <h2 class="product-title">{{ product.name }}</h2>
-      <p class="product-category">
-        Category: <span>{{ product.category }}</span>
-      </p>
-      <p class="product-rating">⭐ {{ product.rating }}</p>
-      <p class="product-description">{{ product.description }}</p>
-      <p class="product-price">₹{{ product.price }}</p>
+      <div class="product-image-container">
+        <img :src="product.image" alt="Product Image" class="product-image" />
+      </div>
+      <div class="product-info">
+        <h2 class="product-title">{{ product.name }}</h2>
+        <p class="product-category">
+          Category: <span>{{ product.category }}</span>
+        </p>
+        <p class="product-rating">⭐ {{ product.rating }}</p>
+        <p class="product-description">{{ product.description }}</p>
+        <p class="product-price">₹{{ product.price }}</p>
 
-      <button @click="addToCart(product)" class="add-btn">{{ cartpara }}</button>
+        <button @click="toggleCart(product)" :class="['add-btn', { 'added-btn': cartitem }]">
+          {{ cartitem ? 'Added to Cart' : 'Add to Cart' }}
+        </button>
+        <button @click="toggleFavourite(product)" class="favourites">Add to Favourites</button>
+      </div>
     </div>
   </div>
 </template>
@@ -20,14 +27,27 @@ import { useRoute } from 'vue-router'
 import { ref } from 'vue'
 import { useCartStore } from '../stores/cartStore.js'
 import { products } from './productsData'
+import { useFavouriteStore } from '../stores/favouriteStore.js'
+import { toast } from 'vue3-toastify'
 
 const route = useRoute()
 const cartStore = useCartStore()
+const favouriteStore = useFavouriteStore()
 const product = ref(products.find((p) => p.id == route.params.id))
-const cartpara = ref('Add to Cart')
-function addToCart(p) {
-  cartStore.addToCart(p)
-  cartpara.value = 'Added to Cart'
+const cartitem = ref(false)
+function toggleFavourite(p) {
+  favouriteStore.addToFavourites(p)
+  toast.success('Added to favourites!', { position: 'top-center' })
+}
+function toggleCart(p) {
+  if (!cartitem.value) {
+    cartStore.addToCart(p)
+    cartitem.value = true
+    toast.success('Added to cart!', { position: 'top-center' })
+  } else {
+    cartStore.removeFromCart(p.id)
+    cartitem.value = false
+  }
 }
 </script>
 
@@ -36,7 +56,6 @@ function addToCart(p) {
 .product-container {
   display: flex;
   justify-content: center;
-  align-items: center;
   padding: 2rem;
 }
 
@@ -44,8 +63,9 @@ function addToCart(p) {
 .product-card {
   background: #ffffff;
   padding: 2rem;
-  max-width: 500px;
+  max-width: 1500px;
   width: 100%;
+  display: flex;
   border-radius: 1rem;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   transition:
@@ -59,12 +79,29 @@ function addToCart(p) {
 }
 /* Image */
 .product-image {
-  width: 50%;
+  width: 100%;
   height: auto;
   border-radius: 0.5rem;
   margin-bottom: 1rem;
 }
 
+.product-image-container {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  /* box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); */
+  border: 1px solid #caccd0;
+  align-items: center;
+}
+
+.product-info {
+  flex: 1;
+  margin-left: 2rem;
+  display: flex;
+  margin-top: 20px;
+  flex-direction: column;
+  width: 50%;
+}
 /* Title */
 .product-title {
   font-size: 1.75rem;
@@ -106,6 +143,20 @@ function addToCart(p) {
   color: #111827;
   margin-bottom: 1.5rem;
 }
+.favourites {
+  background: orange;
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+  margin-top: 10px;
+}
 
 /* Add to Cart Button */
 .add-btn {
@@ -125,5 +176,54 @@ function addToCart(p) {
 .add-btn:hover {
   background: #2563eb;
   transform: translateY(-2px);
+}
+
+.added-btn {
+  background-color: greenyellow;
+}
+/* 📱 Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .product-container {
+    padding: 1rem;
+  }
+
+  .product-card {
+    padding: 1.25rem;
+    max-width: 100%;
+  }
+
+  /* Image takes full width on small screens */
+  .product-image {
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Text adjustments */
+  .product-title {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .product-category,
+  .product-rating,
+  .product-description,
+  .product-price {
+    font-size: 0.95rem;
+    text-align: center;
+  }
+
+  /* Price bigger for mobile */
+  .product-price {
+    font-size: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  /* Button full width */
+  .add-btn {
+    width: 100%;
+    padding: 0.9rem;
+    font-size: 1rem;
+    margin-top: 1rem;
+  }
 }
 </style>

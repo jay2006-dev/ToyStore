@@ -1,25 +1,38 @@
 <template>
   <header class="header">
-    <h1 class="logo" @click="router.push('/')">Toy Store</h1>
+    <h1 @click="router.push('/')">
+      <img
+        src="https://img.freepik.com/premium-vector/toy-store-text-effect-3d-comic-style_879681-695.jpg"
+        width="45px"
+        height="45px"
+        class="logo"
+      />
+    </h1>
 
     <nav class="nav">
       <input
         type="text"
         placeholder="Search products..."
         class="search-input"
-        @keyup.enter="$emit('search', $event.target.value)"
+        :value="searchQuery"
+        @input="onInput"
       />
       <router-link to="/" class="nav-link">Home</router-link>
       <router-link to="/products" class="nav-link">Products</router-link>
-      <router-link to="/cart" class="nav-link">Cart</router-link>
+      <router-link to="/favourites" class="nav-link">Wishlist</router-link>
+      <router-link v-if="cartStore.cart.length > 0" to="/cart" class="nav-link"
+        >Cart ({{ cartStore.cart.length }})</router-link
+      ><router-link v-else to="/cart" class="nav-link"><i fa fa-shoping-cart></i>Cart </router-link>
       <router-link to="/checkout" class="nav-link">Checkout</router-link>
-      <button class="logout-btn" @click="logout">Logout</button>
+      <button v-if="authStore.isAuthorized" class="logout-btn" @click="logout">Logout</button>
     </nav>
   </header>
 </template>
 <script setup>
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth.js'
+import { useCartStore } from '../stores/cartStore.js'
+const cartStore = useCartStore()
 const router = useRouter()
 const authStore = useAuthStore()
 defineOptions({
@@ -29,13 +42,24 @@ function logout() {
   authStore.logout() // Call the logout action from the auth store
   router.push('/login') // Redirect to home after logout
 }
+const { searchQuery } = defineProps({
+  searchQuery: String,
+})
+
+const emit = defineEmits(['update:searchQuery'])
+
+function onInput(e) {
+  router.push('/products')
+  emit('update:searchQuery', e.target.value) // Vue auto-updates App.vue's searchQuery
+}
 </script>
 <style scoped>
 .header {
   background-color: #2563eb; /* Tailwind blue-600 */
   color: white;
-  padding: 1rem;
+  padding: 0.65rem;
   display: flex;
+  margin: 0px;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
@@ -47,6 +71,9 @@ function logout() {
   letter-spacing: 0.5px;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
+  border: none;
+  padding-left: 20px;
+  border-radius: 100px;
 }
 
 .logo:hover {
@@ -54,7 +81,7 @@ function logout() {
 }
 
 .search-input {
-  width: 300px;
+  width: 800px;
   padding: 0.5rem;
   border-radius: 0.375rem;
   border: 1px solid #d1d5db; /* Tailwind gray-300 */
@@ -100,5 +127,59 @@ function logout() {
   transition:
     background-color 0.3s ease,
     transform 0.2s ease;
+}
+/* 📱 Mobile Responsive Header */
+@media (max-width: 1024px) {
+  .search-input {
+    width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.75rem 1rem;
+  }
+
+  .nav {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.75rem;
+    justify-content: flex-start;
+  }
+
+  .search-input {
+    width: 100%;
+    margin-bottom: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 0.5rem;
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .search-input {
+    font-size: 0.9rem;
+    padding: 0.4rem;
+  }
+
+  .nav {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nav-link,
+  .logout-btn {
+    width: 100%;
+    text-align: center;
+  }
 }
 </style>
