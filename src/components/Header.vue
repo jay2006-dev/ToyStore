@@ -20,11 +20,11 @@
       <router-link to="/" class="nav-link">Home</router-link>
       <router-link to="/products" class="nav-link">Products</router-link>
       <router-link to="/favourites" class="nav-link">Wishlist</router-link>
-      <router-link v-if="cartStore.cart.length > 0" to="/cart" class="nav-link"
+      <router-link v-if="cartStore.cart.length > 0 && authStore.user" to="/cart" class="nav-link"
         >Cart ({{ cartStore.cart.length }})</router-link
       ><router-link v-else to="/cart" class="nav-link"><i fa fa-shoping-cart></i>Cart </router-link>
       <router-link to="/checkout" class="nav-link">Checkout</router-link>
-      <button v-if="authStore.isAuthorized" class="logout-btn" @click="logout">Logout</button>
+      <button v-if="authStore.isAuthenticated" class="logout-btn" @click="logout">Logout</button>
     </nav>
   </header>
 </template>

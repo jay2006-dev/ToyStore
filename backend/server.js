@@ -65,7 +65,7 @@ app.post('/verify-payment', (req, res) => {
     }
   } catch (err) {
     console.error('❌ Error verifying payment:', err)
-    res.status(500).json({ success: false, error: 'Verification failed' })
+    // res.status(500).json({ success: false, error: 'Verification failed' })
   }
 })
 

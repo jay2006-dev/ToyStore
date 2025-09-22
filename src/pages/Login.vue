@@ -12,28 +12,51 @@
         <!-- Title -->
         <h2 class="login-title">Welcome Back 👋</h2>
 
+        <!-- Tabs -->
+        <div class="tabs">
+          <button :class="{ active: mode === 'login' }" @click="mode = 'login'">SIGN IN</button>
+          <button :class="{ active: mode === 'signup' }" @click="mode = 'signup'">SIGN UP</button>
+        </div>
+
         <!-- Login Form -->
-        <form @submit.prevent="handleLogin" class="login-form">
-          <!-- Username -->
-          <div>
-            <input v-model="username" placeholder="Username" class="login-input" />
+        <form @submit.prevent="handleSubmit">
+          <div v-if="mode === 'signup'" class="input-container">
+            <input type="text" v-model="name" placeholder="Name" required autocomplete="new-name" />
+          </div>
+          <div class="input-container">
+            <input
+              type="email"
+              v-model="email"
+              placeholder="Email"
+              required
+              autocomplete="new-email"
+            />
+          </div>
+          <div class="input-container">
+            <input
+              type="password"
+              v-model="password"
+              placeholder="Password"
+              required
+              autocomplete="new-password"
+            />
           </div>
 
-          <!-- Password -->
-          <div>
-            <input v-model="password" type="password" placeholder="Password" class="login-input" />
+          <div class="options" v-if="mode === 'login'">
+            <label> <input type="checkbox" v-model="rememberMe" /> Stay signed in </label>
+            <!-- <p v-if="mode==='login'" class="forgot">Forgot Password?</p> -->
           </div>
+          <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
 
-          <div>
-            <p class="register-acc">Want to create an account? <a href="#">Register</a></p>
-          </div>
-
-          <!-- Login Button -->
-          <button type="submit" class="login-btn">Login</button>
-
-          <!-- Error Message -->
-          <p v-if="error" class="error-message">{{ error }}</p>
+          <button type="submit" class="btn-submit">
+            {{ mode === 'login' ? 'SIGN IN' : 'SIGN UP' }}
+          </button>
         </form>
+
+        <button class="btn-google" @click="handleGoogleLogin">
+          <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" />
+          Login with Google
+        </button>
       </div>
     </div>
   </div>
@@ -46,17 +69,54 @@ import { useAuthStore } from '../stores/auth.js'
 defineOptions({
   name: 'LoginPage',
 })
-const username = ref('')
+const name = ref('')
+const email = ref('')
 const password = ref('')
-const error = ref('')
-const authStore = useAuthStore()
-const router = useRouter()
+const rememberMe = ref(false)
+const mode = ref('login')
+const errorMessage = ref('') // 🔹 add error state
 
-function handleLogin() {
-  if (authStore.login(username.value, password.value)) {
-    router.push('/')
-  } else {
-    error.value = 'Invalid username or password'
+const router = useRouter()
+const authStore = useAuthStore()
+
+const handleSubmit = async () => {
+  errorMessage.value = '' // reset error before new attempt
+
+  try {
+    if (mode.value === 'login') {
+      await authStore.login(email.value, password.value)
+      router.replace('/')
+    } else {
+      await authStore.signup(email.value, password.value, name.value)
+      await authStore.login(email.value, password.value)
+      router.replace('/')
+    }
+    
+  } catch (err) {
+    // 🔹 Catch login/signup errors
+    console.error('Auth error:', err)
+
+    if (mode.value === 'login') {
+      if (err.code === 'auth/user-not-found') {
+        errorMessage.value = 'No account found with this email.'
+      } else if (err.code === 'auth/wrong-password') {
+        errorMessage.value = 'Incorrect password.'
+      } else {
+        errorMessage.value = 'Login failed. Please try again.'
+      }
+    } else {
+      errorMessage.value = 'Signup failed. Please try again.'
+    }
+  }
+}
+
+const handleGoogleLogin = async () => {
+  try {
+    await authStore.loginWithGoogle()
+    router.replace('/')
+  } catch (err) {
+    if (err.code === 'auth/popup-closed-by-user') alert('Login popup closed by user.')
+    else alert(err.message)
   }
 }
 </script>
@@ -109,9 +169,13 @@ function handleLogin() {
   max-width: 400px;
   display: flex;
   flex-direction: column;
+  gap: 3.5rem;
+}
+form {
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
 }
-
 .login-title {
   font-size: 2rem;
   font-weight: 800;
@@ -120,21 +184,29 @@ function handleLogin() {
   margin-bottom: 1rem;
 }
 
-.register-acc {
-  text-align: center;
-  font-weight: 400;
-  color: #1f2937;
-  font-size: 1rem;
-  margin-top: 1rem;
-}
-
-.login-form {
+.tabs {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   gap: 1rem;
 }
 
-.login-input {
+.tabs button {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: #e5e7eb;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.tabs button.active {
+  background: #3b82f6;
+  color: white;
+}
+
+.input-container input {
   width: 100%;
   border: none;
   border-radius: 0.5rem;
@@ -149,12 +221,20 @@ function handleLogin() {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
-.login-input:focus {
+.input-container input:focus {
   background: #fff;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
-.login-btn {
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.btn-submit {
   width: 100%;
   background-color: #3b82f6;
   color: white;
@@ -170,15 +250,42 @@ function handleLogin() {
   font-size: 1.1rem;
 }
 
-.login-btn:hover {
+.btn-submit:hover {
   background-color: #2563eb;
 }
 
-.login-btn:active {
+.btn-submit:active {
   transform: scale(0.98);
 }
 
-.error-message {
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.7rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.btn-google:hover {
+  background: #f9fafb;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.btn-google img {
+  width: 20px;
+  height: 20px;
+}
+
+.error-msg {
   color: #ef4444;
   font-size: 0.95rem;
   text-align: center;
@@ -207,20 +314,16 @@ function handleLogin() {
     font-size: 1.5rem;
     margin-bottom: 1rem;
   }
-  .login-input {
+  .input-container input {
     font-size: 0.95rem;
     padding: 0.65rem;
   }
-  .register-acc {
-    font-size: 0.9rem;
-    margin-top: 0.75rem;
-  }
-  .login-btn {
+  .btn-submit {
     font-size: 1rem;
     padding: 0.65rem;
     border-radius: 0.5rem;
   }
-  .error-message {
+  .error-msg {
     font-size: 0.85rem;
     margin-top: 0.4rem;
   }

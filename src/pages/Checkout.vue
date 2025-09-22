@@ -72,7 +72,7 @@ const startPayment = async () => {
     // Razorpay options
     const options = {
       key: 'rzp_test_RGeGMOEnLzUqYw', // test key
-      amount: order.amount,
+      amount: cartStore.total * 100, // in paise
       currency: order.currency,
       name: 'Grocery Store',
       description: 'Cart Checkout',
