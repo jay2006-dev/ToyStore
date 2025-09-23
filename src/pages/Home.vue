@@ -87,9 +87,9 @@ defineExpose({ vTooltip })
   border-radius: 12px; /* smoother corners */
   margin: 0.75rem auto;
 
-  width: 100%;
-  max-width: 1200px; /* keeps it neat in big screens */
-  height: 300px; /* fixed height */
+  /* width: 100%; */
+  /* max-width: 1200px; keeps it neat in big screens */
+  height: 400px; /* fixed height */
   display: flex;
   align-items: center;
   justify-content: center;

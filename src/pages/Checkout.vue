@@ -112,8 +112,11 @@ const verifyPayment = async (response) => {
       })
       cartStore.cart = [] // clear cart after order
       orderPlaced.value = true
+      name.value = ''
+      email.value = ''
+      address.value = ''
     } else {
-      toast.error('❌ Payment Verification Failed', { position: 'top-center' })
+      // toast.error('❌ Payment Verification Failed', { position: 'top-center' })
     }
   } catch (err) {
     console.error('❌ Verification error:', err)
