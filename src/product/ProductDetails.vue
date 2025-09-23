@@ -79,7 +79,7 @@ function toggleCart(p) {
 }
 /* Image */
 .product-image {
-  width: 100%;
+  width: 60%;
   height: auto;
   border-radius: 0.5rem;
   margin-bottom: 1rem;

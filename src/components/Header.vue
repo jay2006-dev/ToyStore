@@ -1,22 +1,25 @@
 <template>
   <header class="header">
-    <h1 @click="router.push('/')">
-      <img
-        src="https://img.freepik.com/premium-vector/toy-store-text-effect-3d-comic-style_879681-695.jpg"
-        width="45px"
-        height="45px"
-        class="logo"
-      />
-    </h1>
-
-    <nav class="nav">
+    <div class="first">
+      <h1 @click="router.push('/')">
+        <img
+          src="https://img.freepik.com/premium-vector/toy-store-text-effect-3d-comic-style_879681-695.jpg"
+          width="45px"
+          height="45px"
+          class="logo"
+        />
+      </h1>
       <input
         type="text"
         placeholder="Search products..."
         class="search-input"
         :value="searchQuery"
         @input="onInput"
+        height="5%"
       />
+    </div>
+
+    <nav class="nav">
       <router-link to="/" class="nav-link">Home</router-link>
       <router-link to="/products" class="nav-link">Products</router-link>
       <router-link to="/favourites" class="nav-link">Wishlist</router-link>
@@ -57,8 +60,9 @@ function onInput(e) {
 .header {
   background-color: #2563eb; /* Tailwind blue-600 */
   color: white;
-  padding: 0.65rem;
+  padding-right: 0.5rem;
   display: flex;
+  flex-direction: row;
   margin: 0px;
   justify-content: space-between;
   align-items: center;
@@ -69,6 +73,7 @@ function onInput(e) {
   font-weight: bold;
   font-size: 1.5rem;
   letter-spacing: 0.5px;
+  padding: 10px;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
   border: none;
@@ -81,12 +86,13 @@ function onInput(e) {
 }
 
 .search-input {
-  width: 800px;
-  padding: 0.5rem;
+  width: 300px;
+  margin: auto;
+  padding: 1rem;
+  height: 15px;
   border-radius: 0.375rem;
-  border: 1px solid #d1d5db; /* Tailwind gray-300 */
-  outline: none;
-  transition: border-color 0.2s ease-in-out;
+  border: 1px solid #d1d5db;
+  transition: white 0.2s ease-in-out;
 }
 .search-input:focus {
   border-color: #3b82f6; /* Tailwind blue-500 */
@@ -128,6 +134,11 @@ function onInput(e) {
     background-color 0.3s ease,
     transform 0.2s ease;
 }
+.first {
+  display: flex;
+  flex-direction: row;
+}
+
 /* 📱 Mobile Responsive Header */
 @media (max-width: 1024px) {
   .search-input {

@@ -3,7 +3,7 @@
     <Login />
   </div>
   <div v-else>
-    <Header v-model:searchQuery="searchQuery" style="height: 25%" />
+    <Header v-model:searchQuery="searchQuery" />
     <router-view :searchQuery="searchQuery" />
     <Footer class="footer" />
   </div>

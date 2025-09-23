@@ -33,10 +33,12 @@
           <button @click="removeItem(item.id)" class="remove-btn">Remove</button>
         </div>
       </div>
-
-      <div class="cart-total">Total: ₹{{ cartStore.total }}</div>
-
-      <router-link to="/checkout" class="checkout-btn"> Proceed to Checkout </router-link>
+      <div>
+        <div class="cart-total">
+          <p style="justify-content: flex-start">Total: ₹{{ cartStore.total }}</p>
+          <router-link to="/checkout" class="checkout-btn"> Proceed to Checkout </router-link>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -59,8 +61,14 @@ function updateQuantity(id, qty) {
 
 <style scoped>
 .cart-container {
-  padding: 1rem;
-  height: 80vh;
+  max-width: 900px;
+  margin: 20px auto;
+  min-height: 600px !important;
+  height: auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .cart-title {
@@ -69,8 +77,12 @@ function updateQuantity(id, qty) {
   margin-bottom: 1rem;
 }
 
-.cart-empty {
-  color: #6b7280; /* Tailwind gray-500 */
+.empty-cart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 600px;
+  text-align: center;
 }
 
 .cart-items {
@@ -138,6 +150,7 @@ function updateQuantity(id, qty) {
 }
 .item-actions {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 0.5rem;
 }
@@ -170,12 +183,17 @@ function updateQuantity(id, qty) {
   font-weight: bold;
   font-size: 1.125rem;
   margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .checkout-btn {
   display: block;
   background-color: #3b82f6; /* blue-500 */
+  width: 200px;
   color: white;
+  justify-content: flex-end;
+  align-self: flex-end;
   text-align: center;
   padding: 0.5rem;
   border-radius: 0.375rem;

@@ -26,12 +26,33 @@
           <p class="rating-badge">{{ p.rating }}⭐</p>
         </div>
         <div>
-          <img :src="p.image" alt="Product Image" class="product-image" />
+          <img
+            :src="p.image"
+            alt="Product Image"
+            class="product-image"
+            @click="router.push(`/products/${p.id}`)"
+          />
         </div>
         <div class="product-details">
           <h3 class="product-name">{{ p.name }}</h3>
-          <p class="product-price">₹{{ p.price }}</p>
-          <router-link :to="`/products/${p.id}`" class="product-link"> View </router-link>
+          <p>{{ p.description }}</p>
+          <div class="line">
+            <p
+              class="fav"
+              @click="toggleFavourite(p)"
+              :class="['favourite-btn', { favourited: favouriteMap[p.id] }]"
+            >
+              {{ favouriteMap[p.id] ? '❤️' : '🩶' }}
+            </p>
+            <p class="product-link">₹{{ p.price }}</p>
+          </div>
+          <button
+            @click="toggleCart(p)"
+            class="add"
+            :class="['add-btn', { 'added-btn': cartItemsMap[p.id] }]"
+          >
+            {{ cartItemsMap[p.id] ? 'Added to Cart' : 'Add to Cart' }}
+          </button>
         </div>
       </div>
     </div>
@@ -39,16 +60,31 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { ref, computed, watchEffect } from 'vue'
 import { products } from './productsData'
 import { vTooltip } from 'floating-vue'
+import { useCartStore } from '../stores/cartStore.js'
+import { useFavouriteStore } from '../stores/favouriteStore.js'
+import { toast } from 'vue3-toastify'
 
+const router = useRouter()
+const cartStore = useCartStore()
+const favouriteStore = useFavouriteStore()
+const cartItemsMap = ref({}) // key: product id, value: true/false
+const favouriteMap = ref({}) // key: product id, value: true/false
 const filter = ref('')
 const sortOption = ref('')
 const props = defineProps({
   searchQuery: String,
 })
-
+watchEffect(() => {
+  products.forEach((p) => {
+    cartItemsMap.value[p.id] = cartStore.items?.some((item) => item.id === p.id) || false
+    favouriteMap.value[p.id] =
+      favouriteStore.favouriteItems?.some((item) => item.id === p.id) || false
+  })
+})
 // Final displayed products
 const displayedProducts = computed(() => {
   let base = [...products]
@@ -71,13 +107,34 @@ const displayedProducts = computed(() => {
 
   return base
 })
+function toggleCart(p) {
+  if (!cartItemsMap.value[p.id]) {
+    cartStore.addToCart(p)
+    cartItemsMap.value[p.id] = true
+    toast.success('Added to cart!', { position: 'top-center' })
+  } else {
+    cartStore.removeFromCart(p.id)
+    cartItemsMap.value[p.id] = false
+  }
+}
+
+function toggleFavourite(p) {
+  if (favouriteStore.favouriteItems.some((item) => item.id === p.id)) {
+    favouriteStore.removeFromFavourites(p.id)
+    toast.info('Removed from favourites', { position: 'top-center' })
+  } else {
+    favouriteStore.addToFavourites(p)
+    toast.success('Added to favourites!', { position: 'top-center' })
+  }
+}
+
 defineExpose({ vTooltip })
 </script>
 
 <style scoped>
 /* Container */
 .products-container {
-  padding: 1rem;
+  /* padding: 1rem; */
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -96,70 +153,69 @@ defineExpose({ vTooltip })
   color: #1f2937;
 }
 
-/* Filter Select */
-.filter-controls {
+.line {
   display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  margin-bottom: 1rem;
+  flex-direction: row;
+  justify-content: space-between;
 }
-
 /* Base select style */
 .filter-select {
-  appearance: none; /* remove default browser arrow */
-  border: 1px solid #d1d5db;
-  padding: 0.5rem 2.5rem 0.5rem 1rem; /* extra right padding for custom arrow */
-  border-radius: 0.75rem;
+  appearance: none; /* Remove default arrow */
+  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  border-radius: 0.5rem;
   font-size: 0.95rem;
   font-weight: 500;
   color: #374151;
-  background-color: #f9fafb;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
   cursor: pointer;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s,
-    background-color 0.2s;
+  transition: all 0.3s ease;
   position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* Hover & focus */
+/* Hover & focus effects */
 .filter-select:hover {
-  background-color: #f3f4f6;
-}
-.filter-select:focus {
   border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
-  outline: none;
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
 }
 
-/* Add a custom dropdown arrow */
+.filter-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Custom arrow using SVG */
 .filter-select {
-  background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 1rem;
 }
 
-/* Optional: shrink on small screens */
+.filters {
+  gap: 1rem;
+  /* padding: 10px; */
+  display: flex;
+  margin-bottom: 1rem; /* optional spacing from other content */
+}
+
+/* Responsive adjustments */
 @media (max-width: 640px) {
-  .filter-controls {
+  .filters {
     flex-direction: column;
-    align-items: stretch;
+    gap: 0.75rem;
   }
   .filter-select {
     width: 100%;
   }
 }
 
-.filters {
-  display: flex;
-  gap: 1rem;
-}
-
 /* Product Grid */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 1rem;
 }
 
@@ -169,6 +225,7 @@ defineExpose({ vTooltip })
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
   padding: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16); /* ✅ subtle base shadow */
   background: #ffffff;
   transition:
     transform 0.2s,
@@ -177,18 +234,32 @@ defineExpose({ vTooltip })
   display: flex;
   flex-direction: column;
 }
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* ✅ stronger on hover */
+}
+
 .product-top {
   position: relative;
 }
 .rating-badge {
   position: absolute;
-  top: -8px; /* 👈 moves outside */
-  left: -8px; /* 👈 sticks to left */
-  background: violet;
-  color: black;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 14px;
+  top: -24px; /* inside the card */
+  right: -12px; /* top-right corner */
+  background: linear-gradient(to right, #1e90ff, #7d11e2);
+  color: white; /* dark text */
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 4px;
+  border-radius: 0 20% 0 40%; /* circular */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px; /* ensures circle shape */
+  height: 32px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 2; /* stays above the image */
 }
 
 /*Image*/
@@ -206,41 +277,47 @@ defineExpose({ vTooltip })
 }
 
 .product-details {
-  text-align: center;
-  margin-top: auto; /* pushes this block to bottom if space is left */
+  text-align: start;
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
 /* Product Name */
 .product-name {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.325rem;
   color: #111827;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+  text-align: start !important;
 }
 
 /* Product Price */
-.product-price {
-  color: #374151;
-  font-size: 0.95rem;
-  margin-bottom: 0.75rem;
+.add {
+  /* position: absolute; */
+  bottom: -24px; /* inside the card */
+  left: -12px; /* top-right corner */
+  background: linear-gradient(to right, #1e90ff, #7d11e2);
+  color: white; /* dark text */
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  /* padding: 4px; */
+  border-radius: 0 20% 0 40%; /* circular */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px; /* ensures circle shape */
+  height: 32px;
+  cursor: crosshair;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 2; /* stays above the image */
 }
 
 /* Link */
 .product-link {
   display: inline-block;
-  padding: 0.5rem 1rem;
-  background-color: #3b82f6; /* blue-500 */
-  color: #fff;
-  font-weight: 600;
-  text-decoration: none;
-  border-radius: 0.5rem; /* rounded corners */
-  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
-  transition:
-    background-color 0.3s ease,
-    transform 0.2s ease,
-    box-shadow 0.3s ease;
+  text-align: end !important;
+  font-weight: bold;
+  font-size: 1.325rem;
 }
 
 .product-link:hover {
@@ -282,23 +359,20 @@ defineExpose({ vTooltip })
 
   /* Product Card */
   .product-card {
-    padding: 0.75rem;
+    padding: 0.8rem;
   }
 
   .product-image {
-    max-height: 120px;
-    margin-bottom: 0.5rem;
+    height: 150px;
   }
 
   .product-name {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
   }
 
-  .product-price {
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
+  .add {
+    font-size: 1rem;
   }
-
   .product-link {
     width: 100%;
     padding: 0.6rem;

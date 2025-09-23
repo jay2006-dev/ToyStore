@@ -11,6 +11,13 @@
     <form v-else @submit.prevent="startPayment" class="checkout-form">
       <input v-model="name" placeholder="Full Name" class="checkout-input" required />
       <input v-model="email" placeholder="Email" class="checkout-input" type="email" required />
+      <input v-model="number" placeholder="PhoneNo" class="checkout-input" type="number" required />
+      <select v-model="district" required class="checkout-input">
+        <option value="" disabled>Select District</option>
+        <option v-for="d in districts" :key="d" :value="d">
+          {{ d }}
+        </option>
+      </select>
       <textarea
         v-model="address"
         placeholder="Shipping Address"
@@ -49,6 +56,23 @@ const orderPlaced = ref(false)
 
 const router = useRouter()
 const cartStore = useCartStore()
+
+const district = ref('')
+
+const districts = [
+  'Hyderabad',
+  'Ranga Reddy',
+  'Medchal',
+  'Warangal',
+  'Siddipet',
+  'JayaShankar Bhupalpally',
+  'Karimnagar',
+  'Nizamabad',
+  'Khammam',
+  'Mahbubnagar',
+  'Adilabad',
+  'Nalgonda',
+]
 
 // ✅ Go back to shop
 function continueShopping() {
@@ -134,136 +158,182 @@ onMounted(() => {
 
 <style scoped>
 .checkout-container {
-  padding: 1rem;
-  max-width: 28rem;
-  margin: 0 auto;
-  height: 80vh;
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
 }
 
 .checkout-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #f3f4f6;
+  padding-bottom: 0.75rem;
 }
 
 .checkout-empty {
-  color: #6b7280; /* gray-500 */
+  text-align: center;
+  color: #6b7280;
+  font-size: 1.1rem;
+  padding: 2rem 0;
 }
 
 .checkout-form {
   display: flex;
   flex-direction: column;
+  gap: 1.2rem;
+}
+
+.checkout-row {
+  display: flex;
   gap: 1rem;
 }
 
 .checkout-input,
 .checkout-textarea {
-  border: 1px solid #d1d5db; /* gray-300 */
-  padding: 0.5rem;
-  border-radius: 0.375rem;
-  width: 100%;
+  flex: 1;
+  border: 1px solid #d1d5db;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
   font-size: 1rem;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+  color: #374151;
+  transition: all 0.2s ease;
 }
 
 .checkout-input:focus,
 .checkout-textarea:focus {
-  border-color: #3b82f6; /* blue-500 */
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.checkout-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.checkout-summary {
+  background: #f9fafb;
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+.checkout-summary h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #111827;
+}
+
+.checkout-summary ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.checkout-summary li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  font-size: 0.95rem;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.checkout-summary li:last-child {
+  border-bottom: none;
 }
 
 .checkout-total {
-  font-weight: bold;
-  font-size: 1.125rem;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-top: 0.75rem;
+  color: #111827;
 }
 
 .checkout-btn {
-  background-color: #22c55e; /* green-500 */
+  background: linear-gradient(to right, #ef4444, #ec4899);
   color: white;
-  padding: 0.5rem;
-  border-radius: 0.375rem;
-  cursor: pointer;
+  padding: 0.9rem;
   border: none;
-  width: 100%;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.3s ease;
 }
 
 .checkout-btn:hover {
-  background-color: #16a34a; /* green-600 */
+  transform: scale(1.02);
+  background: linear-gradient(to right, #dc2626, #db2777);
 }
 
 .order-success {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   padding: 1rem;
-  background-color: #dcfce7; /* green-100 */
-  border-radius: 0.375rem;
-  color: #15803d; /* green-700 */
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  color: #15803d;
+  text-align: center;
+  font-weight: 500;
 }
 
 .continue-shopping {
   margin-top: 1rem;
-  padding: 0.5rem;
-  background-color: #2563eb;
-  border-radius: 0.375rem;
+  padding: 0.9rem;
+  width: 100%;
+  background: #2563eb;
   border: none;
+  border-radius: 10px;
   color: white;
-  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.3s ease;
 }
 
-/* Mobile responsive styles */
-@media (max-width: 640px) {
+.continue-shopping:hover {
+  background: #1e40af;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
   .checkout-container {
-    padding: 0.75rem;
-    max-width: 100%;
-    height: auto;
+    padding: 1.25rem;
+    margin: 1rem;
   }
 
   .checkout-title {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     text-align: center;
   }
 
-  .checkout-form {
-    gap: 0.75rem;
+  .checkout-row {
+    flex-direction: column;
   }
 
-  .checkout-input,
-  .checkout-textarea {
-    font-size: 0.95rem;
-    padding: 0.6rem;
+  .checkout-btn,
+  .continue-shopping {
+    font-size: 1rem;
+    padding: 0.8rem;
   }
 
-  .checkout-textarea {
-    min-height: 100px;
+  .checkout-summary h3 {
+    text-align: center;
   }
 
   .checkout-total {
     font-size: 1rem;
-    text-align: center;
-    margin-top: 0.5rem;
-  }
-
-  .checkout-btn {
-    padding: 0.75rem;
-    font-size: 1rem;
-    border-radius: 0.5rem;
-  }
-
-  .order-success {
-    font-size: 0.95rem;
-    text-align: center;
-  }
-
-  .continue-shopping {
-    width: 100%;
-    padding: 0.75rem;
-    font-size: 1rem;
-    border-radius: 0.5rem;
   }
 }
 </style>
