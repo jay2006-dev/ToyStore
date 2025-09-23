@@ -1,22 +1,34 @@
 <template>
   <div class="product-container">
     <div class="product-card">
+      <!-- Left Image Section -->
       <div class="product-image-container">
         <img :src="product.image" alt="Product Image" class="product-image" />
       </div>
+
+      <!-- Right Info Section -->
       <div class="product-info">
         <h2 class="product-title">{{ product.name }}</h2>
+
         <p class="product-category">
           Category: <span>{{ product.category }}</span>
         </p>
+
         <p class="product-rating">⭐ {{ product.rating }}</p>
-        <p class="product-description">{{ product.description }}</p>
+
+        <p class="product-description">
+          {{ product.description }}
+        </p>
+
         <p class="product-price">₹{{ product.price }}</p>
 
-        <button @click="toggleCart(product)" :class="['add-btn', { 'added-btn': cartitem }]">
-          {{ cartitem ? 'Added to Cart' : 'Add to Cart' }}
-        </button>
-        <button @click="toggleFavourite(product)" class="favourites">Add to Favourites</button>
+        <div class="btn-group">
+          <button @click="toggleCart(product)" :class="['add-btn', { 'added-btn': cartitem }]">
+            {{ cartitem ? '✓ Added' : 'Add to Cart' }}
+          </button>
+
+          <button @click="toggleFavourite(product)" class="favourites">❤️ Favourite</button>
+        </div>
       </div>
     </div>
   </div>
@@ -57,63 +69,69 @@ function toggleCart(p) {
   display: flex;
   justify-content: center;
   padding: 2rem;
+  background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+  min-height: 90vh;
 }
 
 /* Card */
 .product-card {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
   padding: 2rem;
-  max-width: 1500px;
+  max-width: 1000px;
   width: 100%;
   display: flex;
-  border-radius: 1rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
 }
 
 .product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
 }
+
 /* Image */
-.product-image {
-  width: 60%;
-  height: auto;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
-}
-
 .product-image-container {
-  display: flex;
   flex: 1;
+  display: flex;
   justify-content: center;
-  /* box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); */
-  border: 1px solid #caccd0;
   align-items: center;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #f3f4f6;
 }
 
+.product-image {
+  width: 90%;
+  height: auto;
+  object-fit: contain;
+  transition: transform 0.4s ease;
+}
+
+.product-image-container:hover .product-image {
+  transform: scale(1.05);
+}
+
+/* Info */
 .product-info {
   flex: 1;
   margin-left: 2rem;
   display: flex;
-  margin-top: 20px;
   flex-direction: column;
-  width: 50%;
-}
-/* Title */
-.product-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 1rem;
+  justify-content: center;
 }
 
-/* Category */
+.product-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 0.75rem;
+}
+
 .product-category {
-  color: #4b5563;
-  font-size: 0.95rem;
+  color: #6b7280;
+  font-size: 1rem;
   margin-bottom: 0.5rem;
 }
 
@@ -122,108 +140,102 @@ function toggleCart(p) {
   color: #111827;
 }
 
-/* Rating */
 .product-rating {
-  color: #f59e0b;
-  font-size: 1rem;
+  display: inline-block;
+  background: #fde68a;
+  color: #92400e;
+  font-size: 0.95rem;
+  font-weight: 600;
+  width: 50px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
   margin-bottom: 1rem;
 }
 
-/* Description */
 .product-description {
   color: #374151;
-  line-height: 1.5;
+  line-height: 1.6;
   margin-bottom: 1.25rem;
+  font-size: 1rem;
 }
 
-/* Price */
 .product-price {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #111827;
   margin-bottom: 1.5rem;
 }
-.favourites {
-  background: orange;
-  color: #ffffff;
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  font-size: 1rem;
-  border: none;
-  border-radius: 0.75rem;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    transform 0.2s;
-  margin-top: 10px;
+
+/* Buttons */
+.btn-group {
+  display: flex;
+  gap: 1rem;
 }
 
-/* Add to Cart Button */
 .add-btn {
-  background: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: #ffffff;
-  padding: 0.75rem 1.5rem;
+  padding: 0.9rem 1.8rem;
   font-weight: 600;
   font-size: 1rem;
   border: none;
   border-radius: 0.75rem;
   cursor: pointer;
-  transition:
-    background 0.2s,
-    transform 0.2s;
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.4);
+  transition: all 0.3s ease;
 }
 
 .add-btn:hover {
-  background: #2563eb;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   transform: translateY(-2px);
 }
 
 .added-btn {
-  background-color: greenyellow;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  box-shadow: 0 6px 14px rgba(34, 197, 94, 0.4);
 }
-/* 📱 Mobile Responsive Styles */
+
+.favourites {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #ffffff;
+  padding: 0.9rem 1.8rem;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(234, 88, 12, 0.4);
+  transition: all 0.3s ease;
+}
+
+.favourites:hover {
+  background: linear-gradient(135deg, #ea580c, #c2410c);
+  transform: translateY(-2px);
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  .product-container {
-    padding: 1rem;
-  }
-
   .product-card {
-    padding: 1.25rem;
-    max-width: 100%;
+    flex-direction: column;
+    padding: 1.5rem;
   }
 
-  /* Image takes full width on small screens */
-  .product-image {
-    width: 100%;
+  .product-image-container {
     margin-bottom: 1.5rem;
   }
 
-  /* Text adjustments */
-  .product-title {
-    font-size: 1.5rem;
+  .product-info {
+    margin-left: 0;
     text-align: center;
   }
 
-  .product-category,
-  .product-rating,
-  .product-description,
-  .product-price {
-    font-size: 0.95rem;
-    text-align: center;
+  .btn-group {
+    flex-direction: column;
   }
 
-  /* Price bigger for mobile */
-  .product-price {
-    font-size: 1.5rem;
-    margin-top: 1rem;
-  }
-
-  /* Button full width */
-  .add-btn {
+  .add-btn,
+  .favourites {
     width: 100%;
-    padding: 0.9rem;
-    font-size: 1rem;
-    margin-top: 1rem;
   }
 }
 </style>
