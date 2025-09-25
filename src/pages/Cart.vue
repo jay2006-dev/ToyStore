@@ -1,7 +1,7 @@
 <template>
   <div class="cart-container">
     <h2 class="cart-title">Your Cart</h2>
-
+    <hr />
     <div v-if="cartStore.cart.length === 0" class="cart-empty">Your cart is empty.</div>
 
     <div v-else class="cart-items">

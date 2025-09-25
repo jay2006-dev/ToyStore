@@ -21,7 +21,7 @@
 
     <!-- Product Grid -->
     <div class="product-grid">
-      <div v-for="p in displayedProducts" :key="p.id" class="product-card" v-tooltip="p.name">
+      <div v-for="p in paginatedProducts" :key="p.id" class="product-card" v-tooltip="p.name">
         <div class="product-top">
           <p class="rating-badge">{{ p.rating }}⭐</p>
         </div>
@@ -56,7 +56,13 @@
         </div>
       </div>
     </div>
+    <div class="pagination">
+      <button @click="prevPage" :disabled="currentPage === 1">⬅ Prev</button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button @click="nextPage" :disabled="currentPage === totalPages">Next ➡</button>
+    </div>
   </div>
+  <!-- </div> -->
 </template>
 
 <script setup>
@@ -67,8 +73,10 @@ import { vTooltip } from 'floating-vue'
 import { useCartStore } from '../stores/cartStore.js'
 import { useFavouriteStore } from '../stores/favouriteStore.js'
 import { toast } from 'vue3-toastify'
+import { useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 const cartStore = useCartStore()
 const favouriteStore = useFavouriteStore()
 const cartItemsMap = ref({}) // key: product id, value: true/false
@@ -78,6 +86,11 @@ const sortOption = ref('')
 const props = defineProps({
   searchQuery: String,
 })
+
+// 🟢 Pagination state
+const currentPage = ref(1)
+const itemsPerPage = 12
+
 watchEffect(() => {
   products.forEach((p) => {
     cartItemsMap.value[p.id] = cartStore.items?.some((item) => item.id === p.id) || false
@@ -88,15 +101,25 @@ watchEffect(() => {
 // Final displayed products
 const displayedProducts = computed(() => {
   let base = [...products]
+  const q = (route.query.search || '').toLowerCase().trim()
 
   // Apply filter first
   if (filter.value) {
     base = base.filter((p) => p.categoryTag === filter.value)
   }
 
+  if (q) {
+    base = base.filter(
+      (p) => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q),
+    )
+  }
+
   // Apply search second
   if (props.searchQuery) {
-    base = base.filter((p) => p.name.toLowerCase().includes(props.searchQuery.toLowerCase().trim()))
+    const q = props.searchQuery.toLowerCase().trim()
+    base = base.filter(
+      (p) => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q),
+    )
   }
 
   if (sortOption.value === 'lowToHigh') {
@@ -107,6 +130,24 @@ const displayedProducts = computed(() => {
 
   return base
 })
+
+const totalPages = computed(() => Math.ceil(displayedProducts.value.length / itemsPerPage))
+
+// Slice products for current page
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return displayedProducts.value.slice(start, end)
+})
+
+// Pagination controls
+function nextPage() {
+  if (currentPage.value < totalPages.value) currentPage.value++
+}
+function prevPage() {
+  if (currentPage.value > 1) currentPage.value--
+}
+
 function toggleCart(p) {
   if (!cartItemsMap.value[p.id]) {
     cartStore.addToCart(p)
@@ -135,7 +176,8 @@ defineExpose({ vTooltip })
 /* Container */
 .products-container {
   /* padding: 1rem; */
-  max-width: 1200px;
+  max-width: 1200px !important;
+  height: auto;
   margin: 0 auto;
 }
 
@@ -199,6 +241,26 @@ defineExpose({ vTooltip })
   /* padding: 10px; */
   display: flex;
   margin-bottom: 1rem; /* optional spacing from other content */
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 20px;
+}
+.pagination button {
+  padding: 6px 12px;
+  border: none;
+  background: #007bff;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.pagination button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 /* Responsive adjustments */

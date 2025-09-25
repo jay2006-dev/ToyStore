@@ -160,6 +160,8 @@ onMounted(() => {
 .checkout-container {
   max-width: 800px;
   margin: 2rem auto;
+  min-height: 600px !important;
+  height: auto;
   padding: 2rem;
   background: #ffffff;
   border-radius: 12px;

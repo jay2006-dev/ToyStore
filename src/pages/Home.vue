@@ -3,11 +3,34 @@
     <!-- Discount Banner -->
     <div class="banner"></div>
 
-    <!-- Carousel -->
+    <div class="category-section">
+      <h2 class="category-title">Shop by Category</h2>
+      <div class="category-grid">
+        <div class="category" @click="setCategory('Action')">
+          <img
+            src="https://m.media-amazon.com/images/I/91ji3PI53AL._UF1000,1000_QL80_.jpg"
+            width="200px"
+          />
+        </div>
+        <div class="category" @click="setCategory('Cars')">
+          <img
+            src="https://t4.ftcdn.net/jpg/02/48/27/97/360_F_248279748_Re9qnj7RFjtf2lbLVqnr5SAQ7hWGx3DE.jpg"
+            width="200px"
+          />
+        </div>
+        <div class="category" @click="setCategory('Sports')">
+          <img
+            src="https://thumbs.dreamstime.com/b/sports-equipment-isolate-objects-vector-cartoon-illustration-football-soccer-tennis-cricket-baseball-game-symbols-127592354.jpg"
+            width="200px"
+          />
+        </div>
+      </div>
+    </div>
+
     <div class="section">
       <h2 class="section-title">New Arrivals</h2>
-      <div class="carousel">
-        <div v-for="p in newProducts" :key="p.id" class="carousel-item" v-tooltip="p.name">
+      <div class="product-grid">
+        <div v-for="p in newProducts" :key="p.id" class="product-card" v-tooltip="p.name">
           <p class="rating">{{ p.rating }}⭐</p>
           <img :src="p.image" alt="Product Image" class="product-image arrivals" />
           <h3>{{ p.name }}</h3>
@@ -48,13 +71,21 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
 import { products } from '../product/productsData'
 import { vTooltip } from 'floating-vue'
+// import ProductList from '../product/ProductList.vue'
+
+const router = useRouter()
+
+function setCategory(category) {
+  router.push({ path: '/products', query: { search: category } })
+}
 
 defineOptions({
   name: 'HomePage',
 })
-const newProducts = products.filter((p) => p.id % 2 === 0).slice(0, 8)
+const newProducts = products.filter((p) => p.id % 2 === 0).slice(0, 5)
 const trendingProducts = products.filter((p) => p.categoryTag === 'trending').slice(0, 5)
 const latestProducts = products.filter((p) => p.categoryTag === 'latest').slice(0, 5)
 defineExpose({ vTooltip })
@@ -96,56 +127,44 @@ defineExpose({ vTooltip })
   box-shadow: 0 12px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* ===== Carousel ===== */
-.carousel {
-  display: flex;
-  gap: 1rem;
-  overflow-x: auto;
-  padding: 0.5rem 0;
-  scroll-snap-type: x mandatory;
-  box-shadow: 20 6px 20px rgba(0.5, 0.5, 0.5, 0.1);
+.category-section {
+  padding: 1rem 1rem;
+  margin-top: 1rem;
 }
 
-.carousel-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 24px 24px rgba(0, 0, 0, 0.12);
-}
-
-.carousel-item {
-  scroll-snap-align: start;
-  min-width: 200px;
-  min-height: 300px;
-  padding-top: 1rem;
-  border: 1px solid #e5e7eb; /* gray-200 */
+.category-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937; /* gray-800 */
+  margin-bottom: 1rem;
   text-align: center;
-  border-radius: 0.75rem;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: all 0.25s ease;
+}
+
+.category-grid {
   display: flex;
-  flex-direction: column; /* stack items neatly */
-  justify-content: space-between; /* push button down */
-}
-
-.carousel::-webkit-scrollbar {
-  height: 6px;
-}
-
-.carousel::-webkit-scrollbar-thumb {
-  background: #cbd5e1; /* gray-300 */
-  border-radius: 4px;
+  gap: 4rem;
+  margin-top: 1rem;
+  flex-direction: row;
+  justify-content: center;
 }
 
 .rating {
-  position: relative;
-  right: -10px;
-  background-color: rgb(176, 205, 15);
-  color: white !important;
-  max-width: fit-content;
-  padding: 0.25rem 0.25rem;
-  border-radius: 0.375rem;
+  position: absolute;
+  top: -14px; /* inside the card */
+  right: 0px; /* top-right corner */
+  background: linear-gradient(to right, #1e90ff, #7d11e2);
+  color: white !important; /* dark text */
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
+  padding: 4px;
+  border-radius: 0 20% 0 40%; /* circular */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px; /* ensures circle shape */
+  height: 32px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 2; /* stays above the image */
 }
 /* ===== Product Grid ===== */
 .product-grid {
@@ -154,32 +173,44 @@ defineExpose({ vTooltip })
   gap: 0.85rem;
 }
 
+.category {
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+  border-radius: 50%;
+  box-shadow: 10px 24px 18px rgba(0, 0, 0, 0.1);
+}
+
+.category img {
+  border-radius: 50%;
+  transition: border-radius 0.3s ease;
+}
+.category:hover {
+  transform: scale(1.05);
+  box-shadow: 0 32px 24px rgba(0, 0, 0, 0.15);
+}
+
 @media (min-width: 768px) {
   .product-grid {
     grid-template-columns: repeat(5, 1fr);
   }
 }
 
-.product-card,
-.carousel-item {
+.product-card {
+  position: relative;
   border: 1px solid #e5e7eb;
-  border-top: 5px solid #3b82f6; /* Tailwind blue-500 */
-  padding: 0.85rem;
-  text-align: center;
-  width: 80%;
-  min-width: 220px;
-  min-height: 300px;
   border-radius: 0.75rem;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: all 0.25s ease;
-
+  padding: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16); /* ✅ subtle base shadow */
+  background: #ffffff;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   display: flex;
-  flex-direction: column; /* stack items neatly */
-  justify-content: space-between; /* push button down */
+  padding-bottom: 0.5rem;
+  align-items: center;
+  flex-direction: column;
 }
-.product-card img,
-.carousel-item img {
+.product-card img {
   width: 55%; /* adjust as per design */
   height: auto;
   border-radius: 0.5rem;
@@ -187,17 +218,16 @@ defineExpose({ vTooltip })
 }
 .arrivals {
   width: 50%;
-  height: auto;
+  height: 50vh;
   border-radius: 0.5rem;
   margin-bottom: 1rem;
 }
 .product-card:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  transform: translateY(-4px);
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* ✅ stronger on hover */
 }
 
-.product-card h3,
-.carousel-item h3 {
+.product-card h3 {
   font-size: 1.05rem;
   margin-top: auto;
   font-weight: 600;
@@ -205,11 +235,10 @@ defineExpose({ vTooltip })
   margin: 0.25rem 0; /* reduce gap */
 }
 
-.product-card p,
-.carousel-item p {
+.product-card p {
   color: #4b5563;
   font-size: 0.9rem;
-  margin: 0.25rem 0 0.5rem; /* tighten spacing */
+  /* margin: 0.25rem 0 0.5rem; tighten spacing */
 }
 
 .product-card .price {
@@ -232,14 +261,13 @@ defineExpose({ vTooltip })
     background-color 0.3s ease,
     transform 0.2s ease,
     box-shadow 0.3s ease;
-  margin-top: auto; /* pushes it neatly to bottom */
+  /* margin-top: auto; pushes it neatly to bottom */
 }
 
 .product-link:hover {
   background: greenyellow; /* darker blue */
 }
-.product-card button,
-.carousel-item button {
+.product-card button {
   margin-top: auto;
 }
 /* Mobile responsive styles */
@@ -263,21 +291,6 @@ defineExpose({ vTooltip })
     margin-bottom: 0.75rem;
   }
 
-  /* Carousel */
-  .carousel {
-    gap: 0.75rem;
-    padding: 0.25rem 0;
-  }
-
-  .carousel-item {
-    min-width: 160px;
-    padding: 0.6rem;
-  }
-
-  .carousel-item img {
-    width: 70%;
-  }
-
   /* Product Grid: 2 per row on mobile */
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -295,25 +308,37 @@ defineExpose({ vTooltip })
 
   /* Rating badge smaller */
   .rating {
-    font-size: 0.75rem;
-    padding: 0.2rem 0.4rem;
+    position: absolute;
+    top: -8px; /* inside the card */
+    right: -8px; /* top-right corner */
+    background: linear-gradient(to right, #1e90ff, #7d11e2);
+    color: white; /* dark text */
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 4px;
+    border-radius: 0 20% 0 40%; /* circular */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px; /* ensures circle shape */
+    height: 32px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    z-index: 2; /* stays above the image */
   }
 
   /* Product text sizes */
-  .product-card h3,
-  .carousel-item h3 {
+  .product-card h3 {
     font-size: 0.9rem;
   }
 
-  .product-card p,
-  .carousel-item p {
+  .product-card p {
     font-size: 0.8rem;
   }
 
   /* Product link full-width for better tapping */
   .product-link {
     width: 100%;
-    padding: 0.5rem;
+    /* padding: 0.5rem; */
     font-size: 0.9rem;
   }
 }

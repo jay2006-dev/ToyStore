@@ -86,10 +86,11 @@ function onInput(e) {
 }
 
 .search-input {
-  width: 300px;
+  width: 350px;
   margin: auto;
+  margin-left: 10px;
   padding: 1rem;
-  height: 15px;
+  height: 10px;
   border-radius: 0.375rem;
   border: 1px solid #d1d5db;
   transition: white 0.2s ease-in-out;
