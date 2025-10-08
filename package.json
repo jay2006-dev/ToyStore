@@ -19,6 +19,7 @@
     "@fortawesome/fontawesome-svg-core": "^7.0.1",
     "@fortawesome/free-solid-svg-icons": "^7.0.1",
     "@fortawesome/vue-fontawesome": "^3.1.2",
+    "dotenv": "^17.2.3",
     "firebase": "^12.3.0",
     "floating-vue": "^5.2.2",
     "pinia": "^3.0.3",
