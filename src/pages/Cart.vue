@@ -1,7 +1,7 @@
 <template>
   <div class="cart-container">
-    <h2 class="cart-title">Your Cart</h2>
-    <hr />
+    <h2 class="cart-title">My Cart</h2>
+    <br />
     <div v-if="cartStore.cart.length === 0" class="cart-empty">Your cart is empty.</div>
 
     <div v-else class="cart-items">
@@ -12,21 +12,16 @@
           </div>
           <div class="item-details">
             <h3 class="item-name">{{ item.name }}</h3>
-            <p style="padding-bottom: 15px">{{ item.description }}</p>
+            <p class="item-info" style="padding-bottom: 15px">{{ item.description }}</p>
             <p class="item-price">₹{{ item.price }} x {{ item.quantity }}</p>
           </div>
         </div>
 
         <div class="item-actions">
-          <div>
+          <div class="quantity">
             <p class="quantity-operator" @click="item.quantity > 1 && item.quantity--">-</p>
-            <input
-              type="number"
-              v-model.number="item.quantity"
-              min="1"
-              class="quantity-input"
-              @change="updateQuantity(item.id, item.quantity)"
-            />
+
+            <p>{{ item.quantity }}</p>
             <p class="quantity-operator" @click="item.quantity++">+</p>
           </div>
 
@@ -35,7 +30,9 @@
       </div>
       <div>
         <div class="cart-total">
-          <p style="justify-content: flex-start">Total: ₹{{ cartStore.total }}</p>
+          <p class="totalAmount" style="justify-content: flex-start">
+            Total: ₹{{ cartStore.total }}
+          </p>
           <router-link to="/checkout" class="checkout-btn"> Proceed to Checkout </router-link>
         </div>
       </div>
@@ -54,9 +51,9 @@ function removeItem(id) {
   cartStore.removeFromCart(id)
 }
 
-function updateQuantity(id, qty) {
-  cartStore.updateQuantity(id, qty)
-}
+// function updateQuantity(id, qty) {
+//   cartStore.updateQuantity(id, qty)
+// }
 </script>
 
 <style scoped>
@@ -114,6 +111,13 @@ function updateQuantity(id, qty) {
 
 .item-details {
   margin-left: 1rem;
+}
+
+.quantity {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .quantity-operator {
@@ -211,11 +215,13 @@ function updateQuantity(id, qty) {
   .cart-container {
     padding: 0.5rem;
     height: auto;
+    margin: 10px;
   }
 
   .cart-title {
     font-size: 1.25rem;
     text-align: center;
+    margin: 0rem;
   }
 
   .cart-items {
@@ -225,7 +231,8 @@ function updateQuantity(id, qty) {
   .cart-item {
     flex-direction: column;
     align-items: flex-start;
-    padding: 0.75rem;
+    /* padding: 0.75rem; */
+    padding: 0rem;
   }
 
   .item-info {
@@ -233,11 +240,14 @@ function updateQuantity(id, qty) {
     align-items: center;
     gap: 0.75rem;
     width: 100%;
+    font-size: 0.8rem;
+    margin: 0rem;
+    padding: 0rem;
   }
 
   .item-image {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
   }
 
   .item-name {
@@ -246,13 +256,22 @@ function updateQuantity(id, qty) {
 
   .item-price {
     font-size: 0.85rem;
+    margin-top: 0rem;
+  }
+
+  .item-details {
+    margin-left: 0rem;
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
   }
 
   .item-actions {
-    margin-top: 0.5rem;
+    margin-top: 0rem;
     width: 100%;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
+    gap: 2rem;
   }
 
   .quantity-input {
@@ -263,19 +282,30 @@ function updateQuantity(id, qty) {
 
   .remove-btn {
     flex: 1;
+    padding: 0.5rem;
     text-align: center;
     max-width: 120px;
+    font-size: 0.9rem;
+    margin-right: 3.5rem;
   }
 
   .cart-total {
     font-size: 1rem;
+    display: flex;
+    flex-direction: row;
     text-align: center;
   }
 
+  .totalAmount {
+    flex: 1;
+    text-align: left;
+  }
+
   .checkout-btn {
-    width: 100%;
+    width: auto;
     font-size: 1rem;
     padding: 0.75rem;
+    margin: 0rem;
   }
 }
 </style>

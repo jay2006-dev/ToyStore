@@ -85,9 +85,9 @@ function setCategory(category) {
 defineOptions({
   name: 'HomePage',
 })
-const newProducts = products.filter((p) => p.id % 2 === 0).slice(0, 5)
-const trendingProducts = products.filter((p) => p.categoryTag === 'trending').slice(0, 5)
-const latestProducts = products.filter((p) => p.categoryTag === 'latest').slice(0, 5)
+const newProducts = products.filter((p) => p.id % 2 === 0).slice(0, 8)
+const trendingProducts = products.filter((p) => p.categoryTag === 'trending').slice(0, 8)
+const latestProducts = products.filter((p) => p.categoryTag === 'latest').slice(0, 8)
 defineExpose({ vTooltip })
 </script>
 
@@ -96,7 +96,6 @@ defineExpose({ vTooltip })
   margin: 0 auto;
   padding: 1rem;
 }
-/* ===== Global Layout ===== */
 .section {
   padding: 1rem 1rem;
 }
@@ -108,8 +107,6 @@ defineExpose({ vTooltip })
   margin-bottom: 1rem;
 }
 
-/* ===== Discount Banner ===== */
-/* ===== Discount Banner ===== */
 .banner {
   position: relative;
   background-image: url('https://i.postimg.cc/hv22Khqc/7ff26d04-fbf8-4925-af30-150a5b0a4a78.png');
@@ -117,9 +114,6 @@ defineExpose({ vTooltip })
   background-position: center;
   border-radius: 12px; /* smoother corners */
   margin: 0.75rem auto;
-
-  /* width: 100%; */
-  /* max-width: 1200px; keeps it neat in big screens */
   height: 400px; /* fixed height */
   display: flex;
   align-items: center;
@@ -128,7 +122,7 @@ defineExpose({ vTooltip })
 }
 
 .category-section {
-  padding: 1rem 1rem;
+  padding: 1rem;
   margin-top: 1rem;
 }
 
@@ -146,6 +140,7 @@ defineExpose({ vTooltip })
   margin-top: 1rem;
   flex-direction: row;
   justify-content: center;
+  align-items: center;
 }
 
 .rating {
@@ -168,9 +163,17 @@ defineExpose({ vTooltip })
 }
 /* ===== Product Grid ===== */
 .product-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: auto;
   gap: 0.85rem;
+  scroll-snap-type: scroll-x mandatory;
+}
+
+.product-card {
+  scroll-snap-align: start;
+  min-width: 240px;
 }
 
 .category {
@@ -181,6 +184,7 @@ defineExpose({ vTooltip })
 }
 
 .category img {
+  width: 140px;
   border-radius: 50%;
   transition: border-radius 0.3s ease;
 }
@@ -192,6 +196,11 @@ defineExpose({ vTooltip })
 @media (min-width: 768px) {
   .product-grid {
     grid-template-columns: repeat(5, 1fr);
+    scroll-snap-type: scroll-x;
+    overflow-x: auto;
+  }
+  .category-section {
+    gap: 6rem;
   }
 }
 
@@ -200,12 +209,14 @@ defineExpose({ vTooltip })
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
   padding: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16); /* ✅ subtle base shadow */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
   background: #ffffff;
   transition:
     transform 0.2s,
     box-shadow 0.2s;
   display: flex;
+  line-height: 1;
+  justify-content: space-between;
   padding-bottom: 0.5rem;
   align-items: center;
   flex-direction: column;
@@ -340,6 +351,48 @@ defineExpose({ vTooltip })
     width: 100%;
     /* padding: 0.5rem; */
     font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-grid {
+    flex-direction: row;
+    gap: 2rem;
+    /* width: 100vw; */
+  }
+
+  .category img {
+    width: 80px;
+  }
+  .product-card button {
+    width: 40vw;
+  }
+
+  .product-link {
+    text-align: center;
+    width: 20vw;
+    position: relative;
+    bottom: 0px;
+  }
+  .rating {
+    font-size: 0.7rem;
+    min-width: 40px;
+    height: 26px;
+    top: -13px;
+    right: 0px;
+  }
+
+  .product-grid {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 0.85rem;
+    scroll-snap-type: scroll-x;
+  }
+  .section-title {
+    font-size: 1.2rem;
+    /* margin-bottom: 0.5rem; */
+    text-align: start;
   }
 }
 </style>

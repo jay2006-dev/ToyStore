@@ -12,7 +12,7 @@ import FavouriteItem from '../pages/FavouriteItem.vue'
 import { useAuthStore } from '../stores/auth.js'
 
 const routes = [
-  { default: '/', name: Home, component: Home },
+  { path: '/', name: 'Home', component: Home },
   { path: '/login', component: Login },
   // { path: '/profile', component: Profile, meta: { requiresAuth: true } },
   { path: '/products', component: ProductList },

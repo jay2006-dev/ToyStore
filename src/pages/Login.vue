@@ -91,7 +91,7 @@ const handleSubmit = async () => {
       await authStore.login(email.value, password.value)
       router.replace('/')
     }
-    
+
   } catch (err) {
     // 🔹 Catch login/signup errors
     console.error('Auth error:', err)
@@ -330,6 +330,15 @@ form {
   .logo {
     max-width: 160px;
     max-height: 160px;
+  }
+}
+@media (max-width: 640px) {
+  .login-card {
+    padding: 1rem 1.5rem;
+  }
+  .logo-container{
+    height: auto;
+    display: none;
   }
 }
 </style>

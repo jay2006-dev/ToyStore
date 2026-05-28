@@ -338,4 +338,15 @@ onMounted(() => {
     font-size: 1rem;
   }
 }
+
+@media (max-width: 640px) {
+  .checkout-input,
+  .checkout-textarea {
+    font-size: 0.95rem;
+    padding: 0.65rem 0.85rem;
+  }
+  .checkout-title {
+    margin: 1rem;
+  }
+}
 </style>

@@ -1,0 +1,10 @@
+<input
+              type="number"
+              v-model.number="item.quantity"
+              min="1"
+              class="quantity-input"
+              @change="updateQuantity(item.id, item.quantity)"
+            />
+
+
+            

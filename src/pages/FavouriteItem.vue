@@ -159,4 +159,56 @@ function toggleCart(p) {
 .added-btn {
   background-color: greenyellow;
 }
+
+@media (max-width: 640px) {
+  .favourite-container {
+    padding: 10px;
+    height: auto;
+    margin: 10px;
+  }
+
+  .favourite-title {
+    font-size: 20px;
+    text-align: center;
+  }
+
+  .favourite-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+  }
+
+  .item-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .item-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .item-name {
+    font-size: 16px;
+  }
+
+  .item-price {
+    font-size: 14px;
+  }
+
+  .item-actions {
+    margin-top: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .remove-button {
+    padding: 12px;
+    font-size: 14px;
+
+  }
+}
 </style>

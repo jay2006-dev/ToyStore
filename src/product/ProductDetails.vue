@@ -10,11 +10,13 @@
       <div class="product-info">
         <h2 class="product-title">{{ product.name }}</h2>
 
-        <p class="product-category">
-          Category: <span>{{ product.category }}</span>
-        </p>
+        <div class="catrat">
+          <p class="product-category">
+            Category: <span>{{ product.category }}</span>
+          </p>
 
-        <p class="product-rating">⭐ {{ product.rating }}</p>
+          <p class="product-rating">⭐ {{ product.rating }}</p>
+        </div>
 
         <p class="product-description">
           {{ product.description }}
@@ -103,7 +105,7 @@ function toggleCart(p) {
 }
 
 .product-image {
-  width: 90%;
+  width: 100%;
   height: auto;
   object-fit: contain;
   transition: transform 0.4s ease;
@@ -236,6 +238,54 @@ function toggleCart(p) {
   .add-btn,
   .favourites {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-container {
+    padding: 0.5rem;
+    margin: 0.5rem;
+  }
+  .product-image-container {
+    /* margin-bottom: 0rem; */
+    margin: 0rem;
+    padding-left: 0rem;
+  }
+  .product-card {
+    padding: 2rem;
+  }
+
+  .product-info {
+    text-align: start;
+  }
+  .product-title {
+    font-size: 1.5rem;
+  }
+  .product-rating,
+  .product-category {
+    margin-bottom: auto;
+    margin-top: auto;
+  }
+  .catrat {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  .product-price {
+    font-size: 1.25rem;
+  }
+  .btn-group {
+    flex-direction: row;
+    gap: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .add-btn,
+  .favourites {
+    align-content: center;
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
   }
 }
 </style>

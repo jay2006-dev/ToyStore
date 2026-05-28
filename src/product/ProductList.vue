@@ -35,7 +35,7 @@
         </div>
         <div class="product-details">
           <h3 class="product-name">{{ p.name }}</h3>
-          <p>{{ p.description }}</p>
+          <p class="product-info">{{ p.description }}</p>
           <div class="line">
             <p
               class="fav"
@@ -444,20 +444,81 @@ defineExpose({ vTooltip })
 
 /* 📱 Extra small devices (like phones under 480px) */
 @media (max-width: 480px) {
+  .products-header {
+    /* position: fixed; */
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 100;
+    margin-left: 25px;
+    margin-right: 25px;
+    margin-bottom: 0rem;
+  }
+
   .product-grid {
-    grid-template-columns: 1fr; /* only one product per row */
+    grid-template-columns: (2, 1fr); /* only one product per row */
   }
 
   .product-card {
-    padding: 1rem;
+    padding: 0.5rem;
+    margin: 5px 3px 5px 5px;
+    justify-content: space-between;
+  }
+
+  .filters {
+    flex-direction: row;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .filter-select {
+    font-size: 0.85rem;
+    margin: 0px;
+    padding: 0.5rem 2.5rem 0.5rem 1rem;
   }
 
   .product-image {
     max-height: 140px;
   }
 
+  .product-name {
+    font-size: 1rem;
+    margin-bottom: 0rem;
+    margin-top: 0rem;
+  }
+
+  .product-info {
+    font-size: 0.75rem;
+    margin-bottom: 0rem;
+  }
+
+  .link {
+    justify-content: center;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+
+  .fav {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .product-link {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
   .title {
     font-size: 1.1rem;
+  }
+  .rating-badge {
+    font-size: 0.7rem;
+    min-width: 40px;
+    height: 26px;
+    top: -18px;
+    right: -8px;
   }
 }
 </style>
