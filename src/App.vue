@@ -2,10 +2,12 @@
   <div v-if="!authStore.isAuthenticated">
     <Login />
   </div>
-  <div v-else>
+  <div v-else class="app-layout">
     <Header v-model:searchQuery="searchQuery" />
-    <router-view :searchQuery="searchQuery" />
-    <Footer class="footer" />
+    <main class="main-content">
+      <router-view :searchQuery="searchQuery" />
+    </main>
+    <Footer />
   </div>
 </template>
 
@@ -19,39 +21,15 @@ import Login from './pages/Login.vue'
 const searchQuery = ref('') // shared state
 const authStore = useAuthStore()
 </script>
+
 <style scoped>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
-html,
-body {
-  width: 100%;
-  overflow-x: hidden !important;
-  height: 100%;
-}
-.footer {
-  fixed: bottom;
-  width: 100%;
-}
-Header {
-  /* position: sticky; */
-  top: 0;
-  z-index: 1000;
-  height: 10vh;
-}
-@media (max-width: 768px) {
-  Header {
-    height: auto;
-  }
-}
-@media (max-width: 480px) {
-  Header {
-    height: auto;
-  }
-  Footer {
-    display: none;
-  }
+
+.main-content {
+  flex: 1;
 }
 </style>

@@ -1,8 +1,27 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+
+// Load persisted cart from sessionStorage (scoped to tab, cleared on close)
+function loadCart() {
+  try {
+    const data = sessionStorage.getItem('toystore_cart')
+    return data ? JSON.parse(data) : []
+  } catch {
+    return []
+  }
+}
 
 export const useCartStore = defineStore('cart', () => {
-  const cart = ref([])
+  const cart = ref(loadCart())
+
+  // Persist cart to sessionStorage on every change
+  watch(cart, (val) => {
+    try {
+      sessionStorage.setItem('toystore_cart', JSON.stringify(val))
+    } catch {
+      // storage full or unavailable — silently fail
+    }
+  }, { deep: true })
 
   function addToCart(product) {
     const item = cart.value.find((p) => p.id === product.id)
@@ -22,7 +41,12 @@ export const useCartStore = defineStore('cart', () => {
     if (item) item.quantity = qty
   }
 
+  function clearCart() {
+    cart.value = []
+    sessionStorage.removeItem('toystore_cart')
+  }
+
   const total = computed(() => cart.value.reduce((sum, p) => sum + p.price * p.quantity, 0))
 
-  return { cart, addToCart, removeFromCart, updateQuantity, total }
+  return { cart, addToCart, removeFromCart, updateQuantity, clearCart, total }
 })

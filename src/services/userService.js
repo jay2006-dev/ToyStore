@@ -1,6 +1,6 @@
 // services/userService.js
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
-import { db } from '@/firebase'
+import { db } from './firebase'
 
 /**
  * Save or update the user's profile in Firestore.
@@ -16,7 +16,7 @@ export const saveUserProfile = async (user) => {
     email: user.email || null,
     displayName: user.displayName || null,
     photoURL: user.photoURL || null,
-    createdAt: serverTimestamp(), // ⬅ better than new Date()
+    createdAt: serverTimestamp(),
   }
 
   // Create or merge the user profile

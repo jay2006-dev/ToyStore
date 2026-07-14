@@ -2,14 +2,16 @@ import axios from 'axios'
 import { useAuthStore } from '../stores/auth.js'
 
 export const api = axios.create({
-  baseURL: 'http://localhost:3000', // 👈 your Express backend
+  baseURL: 'http://localhost:3000',
 })
 
-// Attach token to every request
-api.interceptors.request.use((config) => {
+// Attach token to every request — fetched on-demand from Firebase SDK
+// instead of reading from plain-text localStorage
+api.interceptors.request.use(async (config) => {
   const authStore = useAuthStore()
-  if (authStore.token) {
-    config.headers.Authorization = `Bearer ${authStore.token}`
+  const token = await authStore.getToken()
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })

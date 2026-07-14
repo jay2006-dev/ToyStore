@@ -1,42 +1,108 @@
 <template>
-  <div class="checkout-container">
-    <h2 class="checkout-title">Checkout</h2>
-
-    <!-- Empty Cart -->
-    <div v-if="cartStore.cart.length === 0" class="checkout-empty">
-      Your cart is empty. Add products before checkout.
+  <div class="checkout-page">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+      <div class="breadcrumb-inner">
+        <router-link to="/" class="crumb">Home</router-link>
+        <span class="crumb-sep">
+          <font-awesome-icon icon="chevron-right" />
+        </span>
+        <router-link to="/cart" class="crumb">Cart</router-link>
+        <span class="crumb-sep">
+          <font-awesome-icon icon="chevron-right" />
+        </span>
+        <span class="crumb-current">Checkout</span>
+      </div>
     </div>
 
-    <!-- Checkout Form -->
-    <form v-else @submit.prevent="startPayment" class="checkout-form">
-      <input v-model="name" placeholder="Full Name" class="checkout-input" required />
-      <input v-model="email" placeholder="Email" class="checkout-input" type="email" required />
-      <input v-model="number" placeholder="PhoneNo" class="checkout-input" type="number" required />
-      <select v-model="district" required class="checkout-input">
-        <option value="" disabled>Select District</option>
-        <option v-for="d in districts" :key="d" :value="d">
-          {{ d }}
-        </option>
-      </select>
-      <textarea
-        v-model="address"
-        placeholder="Shipping Address"
-        class="checkout-textarea"
-        required
-      ></textarea>
+    <div class="checkout-container">
+      <div class="checkout-card">
+        <h2 class="checkout-title">
+          <font-awesome-icon icon="shield-alt" class="title-icon" />
+          Checkout Details
+        </h2>
 
-      <div class="checkout-total">Total: ₹{{ cartStore.total }}</div>
+        <!-- Empty Cart -->
+        <div v-if="cartStore.cart.length === 0 && !orderPlaced" class="checkout-empty">
+          <div class="empty-icon">🛒</div>
+          <p>Your cart is empty. Add products before checking out.</p>
+          <button @click="router.push('/products')" class="btn-primary mt-4">
+            Go to Shop
+          </button>
+        </div>
 
-      <button type="submit" class="checkout-btn">Place Order</button>
-    </form>
+        <!-- Success Message -->
+        <div v-else-if="orderPlaced" class="order-success">
+          <div class="success-icon">🎉</div>
+          <h3>Order Placed Successfully!</h3>
+          <p>Thank you for shopping with ToyStore. Your toys are on their way! 🧸</p>
+          <button @click="continueShopping" class="btn-primary">
+            Continue Shopping
+          </button>
+        </div>
 
-    <!-- Success Message -->
-    <div v-if="orderPlaced" class="order-success">
-      🎉 Order placed successfully! Thank you for shopping with us.
+        <!-- Checkout Form -->
+        <form v-else @submit.prevent="startPayment" class="checkout-form">
+          <div class="form-grid">
+            <div class="input-group">
+              <label class="input-label">Full Name</label>
+              <input v-model="name" placeholder="John Doe" class="input-field" required />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Email Address</label>
+              <input v-model="email" placeholder="john@example.com" class="input-field" type="email" required />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Phone Number</label>
+              <input v-model="number" placeholder="Phone Number" class="input-field" type="tel" required />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">District</label>
+              <select v-model="district" required class="input-field select-field">
+                <option value="" disabled>Select District</option>
+                <option v-for="d in districts" :key="d" :value="d">
+                  {{ d }}
+                </option>
+              </select>
+            </div>
+
+            <div class="input-group full-width">
+              <label class="input-label">Shipping Address</label>
+              <textarea
+                v-model="address"
+                placeholder="Enter your complete shipping address"
+                class="input-field textarea-field"
+                required
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Order Summary Section -->
+          <div class="order-summary-box">
+            <h3 class="summary-title">Order Summary</h3>
+            <div class="summary-details">
+              <div v-for="item in cartStore.cart" :key="item.id" class="summary-item">
+                <span class="item-name">{{ item.name }} x{{ item.quantity }}</span>
+                <span class="item-price">₹{{ (item.price * item.quantity).toLocaleString() }}</span>
+              </div>
+              <div class="summary-divider"></div>
+              <div class="summary-total-row">
+                <span class="total-label">Total Amount</span>
+                <span class="total-value">₹{{ cartStore.total.toLocaleString() }}</span>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit">
+            <font-awesome-icon icon="shopping-cart" />
+            Pay & Place Order
+          </button>
+        </form>
+      </div>
     </div>
-    <button v-if="orderPlaced" @click="continueShopping" class="continue-shopping">
-      Continue Shopping
-    </button>
   </div>
 </template>
 
@@ -45,19 +111,21 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore.js'
 import { toast } from 'vue3-toastify'
+import { api } from '../services/api.js'
+
 defineOptions({
   name: 'CheckoutPage',
 })
 
 const name = ref('')
 const email = ref('')
+const number = ref('')
 const address = ref('')
 const orderPlaced = ref(false)
+const district = ref('')
 
 const router = useRouter()
 const cartStore = useCartStore()
-
-const district = ref('')
 
 const districts = [
   'Hyderabad',
@@ -74,23 +142,25 @@ const districts = [
   'Nalgonda',
 ]
 
-// ✅ Go back to shop
 function continueShopping() {
   orderPlaced.value = false
-  cartStore.cart = [] // clear cart after order
-  router.go(-1) // back to products page
+  cartStore.clearCart()
+  router.push('/products')
 }
 
-// ✅ Start Razorpay Payment
+// Start Razorpay Payment
 const startPayment = async () => {
   try {
-    // Call backend to create an order
-    const res = await fetch('http://localhost:3000/create-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cartItems: cartStore.cart, total: cartStore.total }),
+    // Call secure backend route with authorization interceptor automatically applied
+    const res = await api.post('/api/create-order', {
+      cartItems: cartStore.cart.map(item => ({
+        id: item.id,
+        price: item.price,
+        qty: item.quantity,
+        name: item.name
+      }))
     })
-    const order = await res.json()
+    const order = res.data
     console.log('✅ Order created:', order)
 
     // Razorpay options
@@ -98,8 +168,8 @@ const startPayment = async () => {
       key: 'rzp_test_RGeGMOEnLzUqYw', // test key
       amount: cartStore.total * 100, // in paise
       currency: order.currency,
-      name: 'Grocery Store',
-      description: 'Cart Checkout',
+      name: 'ToyStore Checkout',
+      description: 'Pay for your order securely',
       order_id: order.id,
       handler: function (response) {
         verifyPayment(response)
@@ -107,9 +177,9 @@ const startPayment = async () => {
       prefill: {
         name: name.value,
         email: email.value,
-        contact: '6301168711', // can be dynamic if needed
+        contact: number.value,
       },
-      theme: { color: '#F43F5E' },
+      theme: { color: '#F7941D' },
     }
 
     const rzp = new window.Razorpay(options)
@@ -120,27 +190,25 @@ const startPayment = async () => {
   }
 }
 
-// ✅ Verify Payment
+// Verify Payment on Backend
 const verifyPayment = async (response) => {
   try {
-    const res = await fetch('http://localhost:3000/verify-payment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(response),
-    })
-    const data = await res.json()
+    const res = await api.post('/api/verify-payment', response)
+    const data = res.data
 
     if (data.success) {
       toast.success('✅ Payment Verified! Thank you for shopping 🛒', {
         position: 'top-center',
       })
-      cartStore.cart = [] // clear cart after order
+      cartStore.clearCart()
       orderPlaced.value = true
       name.value = ''
       email.value = ''
       address.value = ''
+      number.value = ''
+      district.value = ''
     } else {
-      // toast.error('❌ Payment Verification Failed', { position: 'top-center' })
+      toast.error('❌ Payment Verification Failed', { position: 'top-center' })
     }
   } catch (err) {
     console.error('❌ Verification error:', err)
@@ -157,196 +225,287 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ===== Breadcrumb ===== */
+.breadcrumb-bar {
+  background: var(--color-bg-light);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.9rem 0;
+}
+
+.breadcrumb-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.crumb {
+  color: var(--color-text-light);
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.crumb:hover {
+  color: var(--color-primary);
+}
+
+.crumb-sep {
+  color: var(--color-text-muted);
+  font-size: 0.6rem;
+}
+
+.crumb-current {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* ===== Layout ===== */
+.checkout-page {
+  background: var(--color-bg-light);
+  min-height: calc(100vh - 68px);
+}
+
 .checkout-container {
   max-width: 800px;
   margin: 2rem auto;
-  min-height: 600px !important;
-  height: auto;
-  padding: 2rem;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  padding: 0 1.5rem 3rem;
+}
+
+.checkout-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  padding: 2.5rem;
 }
 
 .checkout-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid #f3f4f6;
-  padding-bottom: 0.75rem;
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-dark);
+  margin-bottom: 1.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }
 
-.checkout-empty {
+.title-icon {
+  color: var(--color-primary);
+}
+
+/* ===== Empty Cart & Success ===== */
+.checkout-empty,
+.order-success {
   text-align: center;
-  color: #6b7280;
-  font-size: 1.1rem;
   padding: 2rem 0;
 }
 
+.empty-icon,
+.success-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.order-success h3 {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  color: #15803d;
+  margin-bottom: 0.5rem;
+}
+
+.order-success p {
+  color: var(--color-text-light);
+  margin-bottom: 1.5rem;
+}
+
+/* ===== Form Layout ===== */
 .checkout-form {
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.2rem;
 }
 
-.checkout-row {
+.input-group {
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
-.checkout-input,
-.checkout-textarea {
-  flex: 1;
-  border: 1px solid #d1d5db;
+.input-group.full-width {
+  grid-column: span 2;
+}
+
+.input-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.input-field {
+  width: 100%;
   padding: 0.75rem 1rem;
-  border-radius: 10px;
-  font-size: 1rem;
-  color: #374151;
-  transition: all 0.2s ease;
-}
-
-.checkout-input:focus,
-.checkout-textarea:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg-light);
   outline: none;
+  transition: var(--transition);
 }
 
-.checkout-textarea {
-  min-height: 120px;
+.input-field:focus {
+  border-color: var(--color-primary);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(247, 148, 29, 0.1);
+}
+
+.select-field {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+}
+
+.textarea-field {
+  min-height: 100px;
   resize: vertical;
 }
 
-.checkout-summary {
-  background: #f9fafb;
-  padding: 1rem 1.25rem;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
+/* ===== Order Summary Box ===== */
+.order-summary-box {
+  background: var(--color-bg-light);
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-top: 0.5rem;
 }
 
-.checkout-summary h3 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: #111827;
-}
-
-.checkout-summary ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.checkout-summary li {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.4rem 0;
-  font-size: 0.95rem;
-  color: #374151;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.checkout-summary li:last-child {
-  border-bottom: none;
-}
-
-.checkout-total {
-  display: flex;
-  justify-content: space-between;
-  font-weight: 700;
+.summary-title {
+  font-family: var(--font-heading);
   font-size: 1.1rem;
-  margin-top: 0.75rem;
-  color: #111827;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: 1rem;
 }
 
-.checkout-btn {
-  background: linear-gradient(to right, #ef4444, #ec4899);
-  color: white;
-  padding: 0.9rem;
-  border: none;
-  border-radius: 10px;
-  font-size: 1.05rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    background 0.3s ease;
+.summary-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 
-.checkout-btn:hover {
-  transform: scale(1.02);
-  background: linear-gradient(to right, #dc2626, #db2777);
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: var(--color-text-light);
 }
 
-.order-success {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background: #dcfce7;
-  border: 1px solid #bbf7d0;
-  border-radius: 10px;
-  color: #15803d;
-  text-align: center;
-  font-weight: 500;
+.summary-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: 0.4rem 0;
 }
 
-.continue-shopping {
-  margin-top: 1rem;
-  padding: 0.9rem;
+.summary-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.total-label {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-dark);
+}
+
+.total-value {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+/* ===== Buttons ===== */
+.btn-submit {
   width: 100%;
-  background: #2563eb;
-  border: none;
-  border-radius: 10px;
+  padding: 0.9rem 1.5rem;
+  background: linear-gradient(135deg, var(--color-primary), #FF6B00);
   color: white;
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1rem;
+  font-family: var(--font-body);
+  border: none;
+  border-radius: var(--radius-xl);
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: var(--transition);
+  box-shadow: 0 4px 16px rgba(247, 148, 29, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
-.continue-shopping:hover {
-  background: #1e40af;
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(247, 148, 29, 0.4);
 }
 
-/* Responsive */
+.btn-primary {
+  padding: 0.75rem 1.8rem;
+  background: linear-gradient(135deg, var(--color-primary), #FF6B00);
+  color: white;
+  font-weight: 700;
+  font-size: 0.92rem;
+  border-radius: var(--radius-xl);
+  transition: var(--transition);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(247, 148, 29, 0.3);
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+/* ===== Responsive ===== */
 @media (max-width: 768px) {
   .checkout-container {
-    padding: 1.25rem;
-    margin: 1rem;
+    padding: 0 1rem;
+    margin: 1rem auto;
   }
 
-  .checkout-title {
-    font-size: 1.5rem;
-    text-align: center;
+  .checkout-card {
+    padding: 1.5rem;
   }
 
-  .checkout-row {
-    flex-direction: column;
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
   }
 
-  .checkout-btn,
-  .continue-shopping {
-    font-size: 1rem;
-    padding: 0.8rem;
+  .input-group.full-width {
+    grid-column: span 1;
   }
 
-  .checkout-summary h3 {
-    text-align: center;
-  }
-
-  .checkout-total {
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 640px) {
-  .checkout-input,
-  .checkout-textarea {
+  .btn-submit {
     font-size: 0.95rem;
-    padding: 0.65rem 0.85rem;
-  }
-  .checkout-title {
-    margin: 1rem;
+    padding: 0.8rem 1.2rem;
   }
 }
 </style>

@@ -7,7 +7,59 @@ import 'vue3-toastify/dist/index.css'
 import FloatingVue from 'floating-vue'
 import 'floating-vue/dist/style.css'
 
+import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import {
+  faSearch,
+  faUser,
+  faShoppingCart,
+  faHeart,
+  faStar,
+  faStarHalfAlt,
+  faBars,
+  faTimes,
+  faCheck,
+  faChevronRight,
+  faChevronLeft,
+  faPhone,
+  faEnvelope,
+  faMapMarkerAlt,
+  faTruck,
+  faShieldAlt,
+  faUndo,
+  faHeadset,
+  faArrowRight,
+  faTag,
+  faClock,
+  faCalendar,
+  faComment,
+} from '@fortawesome/free-solid-svg-icons'
+
+library.add(
+  faSearch,
+  faUser,
+  faShoppingCart,
+  faHeart,
+  faStar,
+  faStarHalfAlt,
+  faBars,
+  faTimes,
+  faCheck,
+  faChevronRight,
+  faChevronLeft,
+  faPhone,
+  faEnvelope,
+  faMapMarkerAlt,
+  faTruck,
+  faShieldAlt,
+  faUndo,
+  faHeadset,
+  faArrowRight,
+  faTag,
+  faClock,
+  faCalendar,
+  faComment,
+)
 
 const app = createApp(App)
 app.use(createPinia())

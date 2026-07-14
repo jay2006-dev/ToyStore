@@ -13,20 +13,20 @@ import {
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
-  const token = ref(localStorage.getItem('token') || null)
   const error = ref(null)
   const loading = ref(false)
-  const isAuthenticated = computed(() => !!user.value) // ✅ reactive auth state
+  const isAuthenticated = computed(() => !!user.value)
 
-  const saveToken = async (firebaseUser) => {
-    if (firebaseUser) {
-      const t = await firebaseUser.getIdToken()
-      token.value = t
-      localStorage.setItem('token', t) // persist
-    } else {
-      token.value = null
-      localStorage.removeItem('token')
+  /**
+   * Get the current user's ID token on-demand.
+   * This avoids storing the token in plain-text localStorage.
+   * Firebase SDK handles token refresh and secure storage internally.
+   */
+  const getToken = async () => {
+    if (auth.currentUser) {
+      return await auth.currentUser.getIdToken(/* forceRefresh */ false)
     }
+    return null
   }
 
   // Signup
@@ -36,7 +36,6 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password)
       await updateProfile(result.user, { displayName: name })
-      await saveToken(result.user)
     } catch (err) {
       error.value = err
       throw err
@@ -50,8 +49,7 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     error.value = null
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password)
-      await saveToken(result.user)
+      await signInWithEmailAndPassword(auth, email, password)
     } catch (err) {
       error.value = err
       throw err
@@ -66,17 +64,13 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     const provider = new GoogleAuthProvider()
-    provider.setCustomParameters({ prompt: 'select_account' }) // force account selection
+    provider.setCustomParameters({ prompt: 'select_account' })
 
     try {
-      const result = await signInWithPopup(auth, provider)
-      await saveToken(result.user)
-      // result.user contains the logged-in user
-      console.log('Google Login Success:', result.user)
+      await signInWithPopup(auth, provider)
     } catch (err) {
       console.error('Google Login Error:', err)
       error.value = err
-      // Provide more detailed error messages
       if (err.code === 'auth/invalid-credential') {
         alert('Invalid Google credentials. Check Firebase configuration and authorized domains.')
       } else if (err.code === 'auth/popup-closed-by-user') {
@@ -98,8 +92,6 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       await signOut(auth)
-      token.value = null
-      localStorage.removeItem('token')
     } catch (err) {
       error.value = err
       throw err
@@ -108,21 +100,21 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Track logged-in user
-  onAuthStateChanged(auth, async (firebaseUser) => {
+  // Track logged-in user via Firebase's own auth state listener
+  // Firebase SDK handles persistence securely (IndexedDB, not plain localStorage)
+  onAuthStateChanged(auth, (firebaseUser) => {
     user.value = firebaseUser
-    await saveToken(firebaseUser)
   })
 
   return {
     user,
     error,
-    token,
     loading,
     signup,
     login,
     isAuthenticated,
     loginWithGoogle,
     logout,
+    getToken,
   }
 })

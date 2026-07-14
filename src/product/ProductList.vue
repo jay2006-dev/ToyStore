@@ -1,68 +1,111 @@
 <template>
-  <div class="products-container">
-    <div class="products-header">
-      <h2 class="title">All Products</h2>
+  <div class="products-page">
+    <!-- Page Hero Banner -->
+    <section class="page-banner">
+      <div class="banner-bg-shapes">
+        <div class="banner-shape banner-shape-1"></div>
+        <div class="banner-shape banner-shape-2"></div>
+      </div>
+      <div class="banner-inner">
+        <h1 class="banner-title">Our Products</h1>
+        <p class="banner-subtitle">Explore our amazing collection of toys for kids of all ages</p>
+      </div>
+    </section>
 
-      <!-- Filter Dropdown -->
-      <div class="filters">
-        <select v-model="filter" class="filter-select">
-          <option value="">All</option>
-          <option value="trending">Trending</option>
-          <option value="latest">Latest</option>
-          <option value="best">Best Selling</option>
-        </select>
-        <select v-model="sortOption" class="filter-select">
-          <option value="">Sort By</option>
-          <option value="lowToHigh">Price: Low → High</option>
-          <option value="highToLow">Price: High → Low</option>
-        </select>
+    <!-- Filters Bar -->
+    <div class="filters-section">
+      <div class="filters-inner">
+        <div class="filters-left">
+          <span class="results-count">{{ displayedProducts.length }} products found</span>
+        </div>
+        <div class="filters-right">
+          <div class="filter-group">
+            <label class="filter-label">Category</label>
+            <select v-model="filter" class="filter-select">
+              <option value="">All</option>
+              <option value="trending">Trending</option>
+              <option value="latest">Latest</option>
+              <option value="best">Best Selling</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Sort By</label>
+            <select v-model="sortOption" class="filter-select">
+              <option value="">Default</option>
+              <option value="lowToHigh">Price: Low → High</option>
+              <option value="highToLow">Price: High → Low</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Product Grid -->
-    <div class="product-grid">
-      <div v-for="p in paginatedProducts" :key="p.id" class="product-card" v-tooltip="p.name">
-        <div class="product-top">
-          <p class="rating-badge">{{ p.rating }}⭐</p>
-        </div>
-        <div>
-          <img
-            :src="p.image"
-            alt="Product Image"
-            class="product-image"
-            @click="router.push(`/products/${p.id}`)"
-          />
-        </div>
-        <div class="product-details">
-          <h3 class="product-name">{{ p.name }}</h3>
-          <p class="product-info">{{ p.description }}</p>
-          <div class="line">
-            <p
-              class="fav"
-              @click="toggleFavourite(p)"
-              :class="['favourite-btn', { favourited: favouriteMap[p.id] }]"
+    <section class="products-section">
+      <div class="product-grid">
+        <div
+          v-for="p in paginatedProducts"
+          :key="p.id"
+          class="product-card"
+          v-tooltip="p.name"
+        >
+          <div class="product-img-wrap" @click="router.push(`/products/${p.id}`)">
+            <img :src="p.image" :alt="p.name" class="product-img" />
+            <span class="rating-badge">
+              <font-awesome-icon icon="star" class="badge-star" />
+              {{ p.rating }}
+            </span>
+            <button
+              class="wishlist-btn"
+              @click.stop="toggleFavourite(p)"
+              :class="{ active: favouriteMap[p.id] }"
             >
-              {{ favouriteMap[p.id] ? '❤️' : '🩶' }}
-            </p>
-            <p class="product-link">₹{{ p.price }}</p>
+              <font-awesome-icon icon="heart" />
+            </button>
           </div>
-          <button
-            @click="toggleCart(p)"
-            class="add"
-            :class="['add-btn', { 'added-btn': cartItemsMap[p.id] }]"
-          >
-            {{ cartItemsMap[p.id] ? 'Added to Cart' : 'Add to Cart' }}
-          </button>
+          <div class="product-info">
+            <span class="product-category">{{ p.category }}</span>
+            <h3 class="product-name" @click="router.push(`/products/${p.id}`)">{{ p.name }}</h3>
+            <p class="product-desc">{{ p.description }}</p>
+            <div class="product-bottom">
+              <span class="product-price">₹{{ p.price.toLocaleString() }}</span>
+              <button
+                @click="toggleCart(p)"
+                class="cart-btn"
+                :class="{ added: cartItemsMap[p.id] }"
+              >
+                <font-awesome-icon :icon="cartItemsMap[p.id] ? 'check' : 'shopping-cart'" />
+                {{ cartItemsMap[p.id] ? 'Added' : 'Add to Cart' }}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="pagination">
-      <button @click="prevPage" :disabled="currentPage === 1">⬅ Prev</button>
-      <span>Page {{ currentPage }} of {{ totalPages }}</span>
-      <button @click="nextPage" :disabled="currentPage === totalPages">Next ➡</button>
-    </div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <button class="page-btn" @click="prevPage" :disabled="currentPage === 1">
+          <font-awesome-icon icon="chevron-left" />
+          Previous
+        </button>
+        <div class="page-numbers">
+          <button
+            v-for="page in visiblePages"
+            :key="page"
+            class="page-num"
+            :class="{ active: currentPage === page }"
+            @click="currentPage = page"
+          >
+            {{ page }}
+          </button>
+        </div>
+        <button class="page-btn" @click="nextPage" :disabled="currentPage === totalPages">
+          Next
+          <font-awesome-icon icon="chevron-right" />
+        </button>
+      </div>
+    </section>
   </div>
-  <!-- </div> -->
 </template>
 
 <script setup>
@@ -79,15 +122,14 @@ const router = useRouter()
 const route = useRoute()
 const cartStore = useCartStore()
 const favouriteStore = useFavouriteStore()
-const cartItemsMap = ref({}) // key: product id, value: true/false
-const favouriteMap = ref({}) // key: product id, value: true/false
+const cartItemsMap = ref({})
+const favouriteMap = ref({})
 const filter = ref('')
 const sortOption = ref('')
 const props = defineProps({
   searchQuery: String,
 })
 
-// 🟢 Pagination state
 const currentPage = ref(1)
 const itemsPerPage = 12
 
@@ -98,12 +140,11 @@ watchEffect(() => {
       favouriteStore.favouriteItems?.some((item) => item.id === p.id) || false
   })
 })
-// Final displayed products
+
 const displayedProducts = computed(() => {
   let base = [...products]
   const q = (route.query.search || '').toLowerCase().trim()
 
-  // Apply filter first
   if (filter.value) {
     base = base.filter((p) => p.categoryTag === filter.value)
   }
@@ -114,7 +155,6 @@ const displayedProducts = computed(() => {
     )
   }
 
-  // Apply search second
   if (props.searchQuery) {
     const q = props.searchQuery.toLowerCase().trim()
     base = base.filter(
@@ -133,14 +173,24 @@ const displayedProducts = computed(() => {
 
 const totalPages = computed(() => Math.ceil(displayedProducts.value.length / itemsPerPage))
 
-// Slice products for current page
 const paginatedProducts = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
   return displayedProducts.value.slice(start, end)
 })
 
-// Pagination controls
+const visiblePages = computed(() => {
+  const pages = []
+  const total = totalPages.value
+  const current = currentPage.value
+  const start = Math.max(1, current - 2)
+  const end = Math.min(total, current + 2)
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+  return pages
+})
+
 function nextPage() {
   if (currentPage.value < totalPages.value) currentPage.value++
 }
@@ -162,9 +212,11 @@ function toggleCart(p) {
 function toggleFavourite(p) {
   if (favouriteStore.favouriteItems.some((item) => item.id === p.id)) {
     favouriteStore.removeFromFavourites(p.id)
+    favouriteMap.value[p.id] = false
     toast.info('Removed from favourites', { position: 'top-center' })
   } else {
     favouriteStore.addToFavourites(p)
+    favouriteMap.value[p.id] = true
     toast.success('Added to favourites!', { position: 'top-center' })
   }
 }
@@ -173,352 +225,510 @@ defineExpose({ vTooltip })
 </script>
 
 <style scoped>
-/* Container */
-.products-container {
-  /* padding: 1rem; */
-  max-width: 1200px !important;
-  height: auto;
+/* ===== Page Banner ===== */
+.page-banner {
+  position: relative;
+  background: linear-gradient(135deg, #F7941D 0%, #FF6B00 40%, #E8850A 100%);
+  padding: 3rem 2rem;
+  text-align: center;
+  overflow: hidden;
+}
+
+.banner-bg-shapes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.banner-shape {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.1;
+  background: white;
+}
+
+.banner-shape-1 {
+  width: 300px;
+  height: 300px;
+  top: -100px;
+  right: -50px;
+}
+
+.banner-shape-2 {
+  width: 200px;
+  height: 200px;
+  bottom: -80px;
+  left: -40px;
+}
+
+.banner-inner {
+  position: relative;
+  z-index: 1;
+  max-width: var(--max-width);
   margin: 0 auto;
 }
 
-.products-header {
+.banner-title {
+  font-family: var(--font-heading);
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: white;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.banner-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.05rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* ===== Filters Section ===== */
+.filters-section {
+  background: white;
+  border-bottom: 1px solid var(--color-border);
+  padding: 1rem 0;
+  position: sticky;
+  top: 68px;
+  z-index: 50;
+  box-shadow: var(--shadow-sm);
+}
+
+.filters-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1.5rem;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-}
-/* Title */
-.title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: #1f2937;
-}
-
-.line {
-  display: flex;
-  flex-direction: row;
   justify-content: space-between;
-}
-/* Base select style */
-.filter-select {
-  appearance: none; /* Remove default arrow */
-  padding: 0.5rem 2.5rem 0.5rem 1rem;
-  border-radius: 0.5rem;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #374151;
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  gap: 1rem;
 }
 
-/* Hover & focus effects */
+.results-count {
+  font-size: 0.92rem;
+  color: var(--color-text-light);
+  font-weight: 500;
+}
+
+.filters-right {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-light);
+  white-space: nowrap;
+}
+
+.filter-select {
+  appearance: none;
+  padding: 0.5rem 2.2rem 0.5rem 1rem;
+  border-radius: var(--radius-xl);
+  font-size: 0.88rem;
+  font-weight: 500;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg-light);
+  border: 1.5px solid var(--color-border);
+  cursor: pointer;
+  transition: var(--transition);
+  background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  background-size: 1rem;
+}
+
 .filter-select:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
+  border-color: var(--color-primary);
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(247, 148, 29, 0.12);
 }
 
-/* Custom arrow using SVG */
-.filter-select {
-  background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 1rem;
+/* ===== Products Section ===== */
+.products-section {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
 }
 
-.filters {
-  gap: 1rem;
-  /* padding: 10px; */
-  display: flex;
-  margin-bottom: 1rem; /* optional spacing from other content */
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  margin: 20px;
-}
-.pagination button {
-  padding: 6px 12px;
-  border: none;
-  background: #007bff;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.pagination button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  .filters {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-  .filter-select {
-    width: 100%;
-  }
-}
-
-/* Product Grid */
+/* ===== Product Grid ===== */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
 }
 
-/* Product Card */
+/* ===== Product Card ===== */
 .product-card {
-  position: relative;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-  padding: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16); /* ✅ subtle base shadow */
-  background: #ffffff;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-
+  background: white;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  transition: var(--transition);
   display: flex;
   flex-direction: column;
 }
 
 .product-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* ✅ stronger on hover */
+  box-shadow: var(--shadow-lg);
+  border-color: transparent;
 }
 
-.product-top {
+.product-img-wrap {
   position: relative;
+  background: var(--color-bg-light);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  overflow: hidden;
+  cursor: pointer;
 }
+
+.product-img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  transition: transform 0.4s ease;
+}
+
+.product-card:hover .product-img {
+  transform: scale(1.08);
+}
+
+/* ===== Rating Badge ===== */
 .rating-badge {
   position: absolute;
-  top: -24px; /* inside the card */
-  right: -12px; /* top-right corner */
-  background: linear-gradient(to right, #1e90ff, #7d11e2);
-  color: white; /* dark text */
-  font-weight: 600;
-  font-size: 0.8rem;
-  padding: 4px;
-  border-radius: 0 20% 0 40%; /* circular */
+  top: 10px;
+  left: 10px;
+  background: linear-gradient(135deg, var(--color-primary), #FF6B00);
+  color: white;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  box-shadow: 0 2px 8px rgba(247, 148, 29, 0.3);
+}
+
+.badge-star {
+  font-size: 0.65rem;
+}
+
+/* ===== Wishlist Button ===== */
+.wishlist-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: white;
+  color: #ccc;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 50px; /* ensures circle shape */
-  height: 32px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  z-index: 2; /* stays above the image */
+  font-size: 0.85rem;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  opacity: 0;
+  border: none;
+  cursor: pointer;
 }
 
-/*Image*/
-
-.product-image {
-  width: 100%;
-  max-height: 160px; /* 👈 limit height but don’t force % */
-  object-fit: contain;
-  border-radius: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-.product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+.product-card:hover .wishlist-btn {
+  opacity: 1;
 }
 
-.product-details {
-  text-align: start;
+.wishlist-btn:hover,
+.wishlist-btn.active {
+  color: var(--color-sale);
+  transform: scale(1.1);
+}
+
+.wishlist-btn.active {
+  opacity: 1;
+}
+
+/* ===== Product Info ===== */
+.product-info {
+  padding: 1rem 1.2rem 1.2rem;
   display: flex;
   flex-direction: column;
-}
-/* Product Name */
-.product-name {
-  font-weight: 600;
-  font-size: 1.325rem;
-  color: #111827;
-  margin-bottom: 0.25rem;
-  text-align: start !important;
+  flex: 1;
 }
 
-/* Product Price */
-.add {
-  /* position: absolute; */
-  bottom: -24px; /* inside the card */
-  left: -12px; /* top-right corner */
-  background: linear-gradient(to right, #1e90ff, #7d11e2);
-  color: white; /* dark text */
+.product-category {
+  font-size: 0.72rem;
   font-weight: 600;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 0.3rem;
+}
+
+.product-name {
+  font-family: var(--font-heading);
   font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: 0.3rem;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-name:hover {
+  color: var(--color-primary);
+}
+
+.product-desc {
+  font-size: 0.82rem;
+  color: var(--color-text-light);
+  line-height: 1.5;
+  margin-bottom: 0.8rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.product-price {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-dark);
+}
+
+/* ===== Cart Button ===== */
+.cart-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  background: var(--color-primary);
+  color: white;
+  font-weight: 600;
+  font-size: 0.78rem;
+  border-radius: var(--radius-xl);
   border: none;
-  /* padding: 4px; */
-  border-radius: 0 20% 0 40%; /* circular */
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.cart-btn:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(247, 148, 29, 0.3);
+}
+
+.cart-btn.added {
+  background: #22c55e;
+}
+
+.cart-btn.added:hover {
+  background: #16a34a;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+/* ===== Pagination ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2.5rem;
+  padding: 1rem 0;
+}
+
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.2rem;
+  background: white;
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 0.88rem;
+  border-radius: var(--radius-xl);
+  border: 1.5px solid var(--color-border);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.page-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-bg-warm);
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.page-num {
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 50px; /* ensures circle shape */
-  height: 32px;
-  cursor: crosshair;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  z-index: 2; /* stays above the image */
+  border-radius: 50%;
+  background: white;
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 0.88rem;
+  border: 1.5px solid var(--color-border);
+  cursor: pointer;
+  transition: var(--transition);
 }
 
-/* Link */
-.product-link {
-  display: inline-block;
-  text-align: end !important;
-  font-weight: bold;
-  font-size: 1.325rem;
+.page-num:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
-.product-link:hover {
+.page-num.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
   color: white;
 }
-/* 📱 Mobile Responsive Styles */
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .banner-title {
+    font-size: 2.2rem;
+  }
+}
+
 @media (max-width: 768px) {
-  .products-header {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .filters-inner {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 0.75rem;
   }
 
-  /* Title adjusts */
-  .title {
-    font-size: 1.25rem;
-    text-align: center;
+  .filters-right {
+    flex-direction: row;
     width: 100%;
   }
 
-  /* Filters stack */
-  .filters {
-    width: 100%;
-    flex-direction: column;
-    gap: 0.5rem;
+  .filter-group {
+    flex: 1;
   }
 
   .filter-select {
     width: 100%;
-    font-size: 0.9rem;
-    padding: 0.6rem 2.5rem 0.6rem 1rem;
   }
 
-  /* Product Grid shrinks to 2 per row */
+  .banner-title {
+    font-size: 1.8rem;
+  }
+
+  .banner-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .page-banner {
+    padding: 2rem 1.5rem;
+  }
+
+  .filters-section {
+    top: 56px;
+  }
+}
+
+@media (max-width: 480px) {
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
   }
 
-  /* Product Card */
-  .product-card {
-    padding: 0.8rem;
-  }
-
-  .product-image {
-    height: 150px;
-  }
-
-  .product-name {
-    font-size: 0.95rem;
-  }
-
-  .add {
-    font-size: 1rem;
-  }
-  .product-link {
-    width: 100%;
-    padding: 0.6rem;
-    font-size: 0.9rem;
-  }
-}
-
-/* 📱 Extra small devices (like phones under 480px) */
-@media (max-width: 480px) {
-  .products-header {
-    /* position: fixed; */
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    z-index: 100;
-    margin-left: 25px;
-    margin-right: 25px;
-    margin-bottom: 0rem;
-  }
-
-  .product-grid {
-    grid-template-columns: (2, 1fr); /* only one product per row */
-  }
-
-  .product-card {
-    padding: 0.5rem;
-    margin: 5px 3px 5px 5px;
-    justify-content: space-between;
-  }
-
-  .filters {
-    flex-direction: row;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .filter-select {
-    font-size: 0.85rem;
-    margin: 0px;
-    padding: 0.5rem 2.5rem 0.5rem 1rem;
-  }
-
-  .product-image {
-    max-height: 140px;
-  }
-
-  .product-name {
-    font-size: 1rem;
-    margin-bottom: 0rem;
-    margin-top: 0rem;
+  .products-section {
+    padding: 1.5rem 1rem 2rem;
   }
 
   .product-info {
-    font-size: 0.75rem;
-    margin-bottom: 0rem;
+    padding: 0.75rem;
   }
 
-  .link {
-    justify-content: center;
-    font-size: 0.85rem;
-    margin-top: 0.5rem;
+  .product-name {
+    font-size: 0.88rem;
   }
 
-  .fav {
+  .product-desc {
+    display: none;
+  }
+
+  .product-price {
     font-size: 1rem;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
   }
 
-  .product-link {
-    font-size: 0.9rem;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
+  .cart-btn {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.72rem;
   }
 
-  .title {
-    font-size: 1.1rem;
-  }
   .rating-badge {
-    font-size: 0.7rem;
-    min-width: 40px;
-    height: 26px;
-    top: -18px;
-    right: -8px;
+    font-size: 0.68rem;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .page-btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .page-num {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+
+  .banner-title {
+    font-size: 1.5rem;
   }
 }
 </style>
