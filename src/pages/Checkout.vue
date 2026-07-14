@@ -42,7 +42,7 @@
         </div>
 
         <!-- Checkout Form -->
-        <form v-else @submit.prevent="startPayment" class="checkout-form">
+        <form v-else @submit.prevent="placeOrder" class="checkout-form">
           <div class="form-grid">
             <div class="input-group">
               <label class="input-label">Full Name</label>
@@ -98,7 +98,7 @@
 
           <button type="submit" class="btn-submit">
             <font-awesome-icon icon="shopping-cart" />
-            Pay & Place Order
+            Place Order
           </button>
         </form>
       </div>
@@ -107,11 +107,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore.js'
 import { toast } from 'vue3-toastify'
-import { api } from '../services/api.js'
 
 defineOptions({
   name: 'CheckoutPage',
@@ -148,80 +147,28 @@ function continueShopping() {
   router.push('/products')
 }
 
-// Start Razorpay Payment
-const startPayment = async () => {
+// Direct Simulation of Placing Order (Bypasses Razorpay payment gateway)
+const placeOrder = () => {
   try {
-    // Call secure backend route with authorization interceptor automatically applied
-    const res = await api.post('/api/create-order', {
-      cartItems: cartStore.cart.map(item => ({
-        id: item.id,
-        price: item.price,
-        qty: item.quantity,
-        name: item.name
-      }))
+    toast.success('🎉 Order Placed Successfully! Thank you for shopping 🛒', {
+      position: 'top-center',
     })
-    const order = res.data
-    console.log('✅ Order created:', order)
-
-    // Razorpay options
-    const options = {
-      key: 'rzp_test_RGeGMOEnLzUqYw', // test key
-      amount: cartStore.total * 100, // in paise
-      currency: order.currency,
-      name: 'ToyStore Checkout',
-      description: 'Pay for your order securely',
-      order_id: order.id,
-      handler: function (response) {
-        verifyPayment(response)
-      },
-      prefill: {
-        name: name.value,
-        email: email.value,
-        contact: number.value,
-      },
-      theme: { color: '#F7941D' },
-    }
-
-    const rzp = new window.Razorpay(options)
-    rzp.open()
+    orderPlaced.value = true
+    // Note: cart is cleared upon clicking "Continue Shopping" or inside the continueShopping handler
+    // But let's clear the cart state now so the navbar cart count updates immediately
+    cartStore.clearCart()
+    
+    // Reset form values
+    name.value = ''
+    email.value = ''
+    address.value = ''
+    number.value = ''
+    district.value = ''
   } catch (err) {
-    console.error('❌ Payment failed', err)
-    toast.error('Payment initialization failed', { position: 'top-center' })
+    console.error('❌ Failed to place order', err)
+    toast.error('Failed to place order', { position: 'top-center' })
   }
 }
-
-// Verify Payment on Backend
-const verifyPayment = async (response) => {
-  try {
-    const res = await api.post('/api/verify-payment', response)
-    const data = res.data
-
-    if (data.success) {
-      toast.success('✅ Payment Verified! Thank you for shopping 🛒', {
-        position: 'top-center',
-      })
-      cartStore.clearCart()
-      orderPlaced.value = true
-      name.value = ''
-      email.value = ''
-      address.value = ''
-      number.value = ''
-      district.value = ''
-    } else {
-      toast.error('❌ Payment Verification Failed', { position: 'top-center' })
-    }
-  } catch (err) {
-    console.error('❌ Verification error:', err)
-    toast.error('Verification request failed', { position: 'top-center' })
-  }
-}
-
-onMounted(() => {
-  const script = document.createElement('script')
-  script.src = 'https://checkout.razorpay.com/v1/checkout.js'
-  script.async = true
-  document.body.appendChild(script)
-})
 </script>
 
 <style scoped>
