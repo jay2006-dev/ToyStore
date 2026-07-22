@@ -167,7 +167,15 @@ const handleSubmit = async () => {
         errorMessage.value = 'Login failed. Please try again.'
       }
     } else {
-      errorMessage.value = 'Signup failed. Please try again.'
+      if (err.code === 'auth/email-already-in-use') {
+        errorMessage.value = 'This email is already registered. Try signing in instead.'
+      } else if (err.code === 'auth/weak-password') {
+        errorMessage.value = 'Password is too weak. Use at least 6 characters.'
+      } else if (err.code === 'auth/invalid-email') {
+        errorMessage.value = 'Please enter a valid email address.'
+      } else {
+        errorMessage.value = 'Signup failed. Please try again.'
+      }
     }
   }
 }
